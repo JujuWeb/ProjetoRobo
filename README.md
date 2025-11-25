@@ -1,22 +1,35 @@
-# ProjetoRobo
-projeto
-Grupo 1
-Alunos: Athos Gabriel Medeiros Brito, 
-Edson Félix dos Santos,
-João Victor Rocha dos Santos, 
-Valessia Juliany de Medeiros Linhares, 
-Pedro Henrique Oliveira de Araújo e
-Michel Jackson dos Santos Bezerra de Medeiros.
+# ProjetoRobo – Grupo 1
 
-Pedro =  → anda devagar em linha reta <br> satelite
-Michel = RoboRapido → anda rápido <br> estrela cadente
-João = RoboZigueZague → muda direção a cada n pixels <br> buraco negro
-Juju = RoboCiclico → faz movimento circular <br> planeta
-Athos = RoboSaltador → dá “pulos” aleatórios <br> nave
-Edson = RoboCaçador → segue o jogador (mais difícil) <br> cometa
-<br>
-Criar animação de explosão ao destruir robôs
-Adicionar sons
-Criar power-ups (velocidade, vida extra, tiro triplo)
-Criar um boss final (RoboChefão) - alien
-Adicionar Imagens aos objetos
+**Alunos:**  
+- Athos Gabriel Medeiros Brito  
+- Edson Félix dos Santos  
+- João Victor Rocha dos Santos  
+- Valessia Juliany de Medeiros Linhares  
+- Pedro Henrique Oliveira de Araújo  
+- Michel Jackson dos Santos Bezerra de Medeiros  
+
+---
+
+## Robôs e Temas
+
+| Aluno | Nome do Robô | Comportamento | Tema |
+|-------|--------------|---------------|-------|
+| Pedro | **RoboLento** | Anda devagar em linha reta | Satélite |
+| Michel | **RoboRapido** | Anda rápido | Estrela cadente |
+| João | **RoboZigueZague** | Muda direção a cada *n* pixels | Buraco negro |
+| Juju | **RoboCiclico** | Movimento circular | Planeta |
+| Athos | **RoboSaltador** | Dá “pulos” aleatórios | Nave |
+| Edson | **RoboCaçador** | Segue o jogador (mais difícil) | Cometa |
+
+---
+
+## Funcionalidades adicionais
+
+- Criar animação de explosão ao destruir robôs  
+- Adicionar sons ao jogo  
+- Criar power-ups:
+  - Velocidade  
+  - Vida extra  
+  - Tiro triplo  
+- Criar um boss final (RoboChefão) – tema: *alien*  
+- Adicionar imagens aos objetos  
