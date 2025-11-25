@@ -1,5 +1,6 @@
 import pygame
 import random
+from typing import List
 
 pygame.init()
 
@@ -11,7 +12,7 @@ pygame.display.set_caption("Robot Defense - Template")
 FPS = 60
 clock = pygame.time.Clock()
 
-fundo_img = pygame.image.load("space.png").convert()
+fundo_img = pygame.image.load("assets/space.png").convert()
 fundo_img = pygame.transform.scale(fundo_img, (800, 600))
 
 # CLASSE BASE
@@ -31,10 +32,37 @@ class Entidade(pygame.sprite.Sprite):
 class Jogador(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 5)
-        self.image.fill((0, 255, 0))  # verde
+
+        # Lista de sprites
+        self.sprites: List[pygame.Surface] = []
+
+        # Carrega imagens
+        img1 = pygame.image.load("assets/Astronaut.png").convert_alpha()
+        img2 = pygame.image.load("assets/Astronaut1.png").convert_alpha()
+
+        # Aumenta o tamanho 
+        img1 = pygame.transform.scale(img1, (80, 80))  
+        img2 = pygame.transform.scale(img2, (80, 80))
+
+        self.sprites.append(img1)
+        self.sprites.append(img2)
+
+        # Animação
+        self.frame = 0
+
+        # Imagem inicial
+        self.image = self.sprites[0]
+        self.rect = self.image.get_rect(center=(x, y))
+
         self.vida = 5
 
     def update(self):
+        self.frame += 0.1
+        if self.frame >= len(self.sprites):
+            self.frame = 0
+
+        self.image = self.sprites[int(self.frame)]
+
         keys = pygame.key.get_pressed()
 
         if keys[pygame.K_w]:
@@ -46,10 +74,13 @@ class Jogador(Entidade):
         if keys[pygame.K_d]:
             self.mover(self.velocidade, 0)
 
-        # limites de tela
-        self.rect.x = max(0, min(self.rect.x, LARGURA - 40))
-        self.rect.y = max(0, min(self.rect.y, ALTURA - 40))
+        # limites
+        self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
+        self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
+        # limites de tela
+        self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
+        self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
 # TIRO (DO JOGADOR)
 class Tiro(Entidade):
@@ -96,7 +127,7 @@ todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
 tiros = pygame.sprite.Group()
 
-jogador = Jogador(LARGURA // 2, ALTURA - 60)
+jogador = Jogador(LARGURA // 290, ALTURA - 60)
 todos_sprites.add(jogador)
 
 pontos = 0
