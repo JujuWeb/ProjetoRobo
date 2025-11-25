@@ -11,6 +11,8 @@ pygame.display.set_caption("Robot Defense - Template")
 FPS = 60
 clock = pygame.time.Clock()
 
+fundo_img = pygame.image.load("space.png").convert()
+fundo_img = pygame.transform.scale(fundo_img, (800, 600))
 
 # CLASSE BASE
 class Entidade(pygame.sprite.Sprite):
@@ -137,7 +139,7 @@ while rodando:
     todos_sprites.update()
 
     # desenhar
-    TELA.fill((20, 20, 20))
+    TELA.blit(fundo_img, (0, 0))
     todos_sprites.draw(TELA)
 
     #Painel de pontos e vida
