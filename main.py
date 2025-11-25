@@ -52,7 +52,7 @@ class Jogador(Entidade):
 
         # Imagem inicial
         self.image = self.sprites[0]
-        self.rect = self.image.get_rect(center=(x, y))
+        self.rect = self.image.get_rect(center=(400, 600))
 
         self.vida = 5
 
