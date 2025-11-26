@@ -1,7 +1,5 @@
 # ProjetoRobo – Grupo 1
 
----
-
 **Alunos:**  
 - Athos Gabriel Medeiros Brito  
 - Edson Félix dos Santos  
