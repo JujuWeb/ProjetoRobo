@@ -19,7 +19,7 @@
 | João | **RoboZigueZague** | Muda direção a cada *n* pixels | Buraco negro |
 | Juju | **RoboCiclico** | Movimento circular | Planeta |
 | Athos | **RoboSaltador** | Dá “pulos” aleatórios | Nave |
-| Edson | **RoboCaçador** | Segue o jogador (mais difícil) | Cometa |
+| Edson | **RoboCaçador** | Segue o jogador | Cometa |
 
 ---
 
