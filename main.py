@@ -39,7 +39,7 @@ while rodando:
         # MENU
         if tela == "menu":
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
+                if event.key == pygame.K_RETURN:
                     tela = "jogo"
 
         # GAME
