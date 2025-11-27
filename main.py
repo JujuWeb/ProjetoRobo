@@ -39,8 +39,8 @@ while rodando:
         # MENU
         if tela == "menu":
             if event.type == pygame.KEYDOWN:
-                tela = "jogo"      
-                pygame.display.flip()
+                if event.key == pygame.K_SPACE:
+                    tela = "jogo"
 
         # GAME
         elif tela == "jogo":
@@ -70,6 +70,12 @@ while rodando:
             jogador.vida -= 1
             if jogador.vida <= 0:
                 tela = "menu"
+                jogador.vida = 5
+                pontos = 0
+                inimigos.empty()
+                tiros.empty()
+                jogador.rect.centerx = LARGURA // 2
+                jogador.rect.centery = ALTURA - 60
                 pygame.mixer.music.rewind()
 
         # Atualizar
@@ -82,15 +88,15 @@ while rodando:
         todos_sprites.draw(TELA)
 
         # Painel
-        font = pygame.font.SysFont("Lucida Console", 20)
+        font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
         texto = font.render(f"Vida: {jogador.vida}  |  Pontos: {pontos}", True, (255, 255, 255))
         TELA.blit(texto, (10, 10))
 
     elif tela == "menu":
-        font = pygame.font.SysFont("Lucida Console", 80)
+        font = pygame.font.Font("assets/DepartureMono-Regular.otf", 80)
         logo = font.render("Logo", True, (255, 255, 255))
         TELA.blit(logo, (350, 200))
-        font = pygame.font.SysFont("Lucida Console", 30)
+        font = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
         texto = font.render("Pressione ENTER para começar!", True, (255, 255, 255))
         TELA.blit(texto, (205, 350))
 
