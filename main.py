@@ -6,7 +6,7 @@ from entidades import *
 pygame.init()
 
 musica = pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
-pygame.mixer_music.play(-1)
+pygame.mixer.music.play(-1)
 
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Robot Defense - Template")
@@ -57,6 +57,34 @@ while rodando:
                     todos_sprites.add(tiro)
                     tiros.add(tiro) 
 
+                # PAUSE
+                if event.key == pygame.K_p:
+                    tela = "pause"
+
+        # PAUSE
+        elif tela == "pause":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    tela = "jogo"
+
+        # GAME OVER
+        elif tela == "gameover":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    tela = "jogo"
+                    jogador.vida = 5
+                    pontos = 0
+
+                    inimigos.empty()
+                    tiros.empty()
+                    todos_sprites.empty()       # ← limpa todos os sprites do jogo
+                    todos_sprites.add(jogador)  # ← adiciona só o jogador de volta
+
+                    jogador.rect.centerx = LARGURA // 2
+                    jogador.rect.centery = ALTURA - 60
+                    pygame.mixer.music.rewind()
+
+
     tempo_texto += 1
     if tempo_texto > 20:   # velocidade de piscar
         texto_visivel = not texto_visivel
@@ -81,14 +109,7 @@ while rodando:
         if pygame.sprite.spritecollide(jogador, inimigos, True):
             jogador.vida -= 1
             if jogador.vida <= 0:
-                tela = "menu"
-                jogador.vida = 5
-                pontos = 0
-                inimigos.empty()
-                tiros.empty()
-                jogador.rect.centerx = LARGURA // 2
-                jogador.rect.centery = ALTURA - 60
-                pygame.mixer.music.rewind()
+                tela = "gameover"
 
         # Atualizar
         todos_sprites.update()
@@ -106,16 +127,36 @@ while rodando:
 
     elif tela == "menu":
         tempo_logo += 0.05  
-    # movimento vertical senoidal
         logo_y = 40 + math.sin(tempo_logo) * 10
-
-    # movimento horizontal senoidal
         logo_x = 40 + math.cos(tempo_logo * 0.8) * 10   
 
         TELA.blit(logo_img, (logo_x, logo_y))
         font = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
         texto = font.render("Pressione ENTER para começar!", True, (255, 255, 255))
-        if texto_visivel:   # só desenha quando está "ligado"
-            TELA.blit(texto, (205, 350))
+
+        if texto_visivel:
+            TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, 350))
+
+    # ---------- PAUSE ----------
+    elif tela == "pause":
+        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 40)
+        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 25)
+
+        texto = font1.render("JOGO PAUSADO", True, (255, 255, 255))
+        texto2 = font2.render("Pressione P para continuar", True, (255, 255, 255))
+
+        TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, ALTURA//2 - 40))
+        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 10))
+
+    # ---------- GAME OVER ----------
+    elif tela == "gameover":
+        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 40)
+        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 25)
+
+        texto = font1.render("GAME OVER", True, (255, 50, 50))
+        texto2 = font2.render("Pressione ENTER para reiniciar", True, (255, 255, 255))
+
+        TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, ALTURA//2 - 40))
+        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 10))
 
     pygame.display.flip()

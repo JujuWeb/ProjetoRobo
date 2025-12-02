@@ -40,14 +40,14 @@ class Jogador(Entidade):
         # Animação
         self.frame = 0
 
-        # Imagem inicial
+        # Imagem inicial (usa o x,y recebidos, não valores fixos)
         self.image = self.sprites[0]
-        self.rect = self.image.get_rect(center=(400, 600))
+        self.rect = self.image.get_rect(center=(x, y))
 
         self.vida = 5
 
     def update(self):
-        self.frame += 0.1
+        self.frame += 0.03
         if self.frame >= len(self.sprites):
             self.frame = 0
 
@@ -64,13 +64,10 @@ class Jogador(Entidade):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.mover(self.velocidade, 0)
 
-        # limites
+        # limites (aplicados uma única vez)
         self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
         self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
-        # limites de tela
-        self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
-        self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
 # TIRO (DO JOGADOR)
 class Tiro(Entidade):
@@ -122,7 +119,7 @@ class RoboZigueZague(Robo):
         self.rect.x += self.direcao * random.randint(3, 8)
 
         # Inverte direção ao bater na parede
-        if self.rect.centerx <= 0 or self.rect.centerx >= LARGURA:
+        if self.rect.x <= 0 or self.rect.x >= LARGURA - self.image.get_width():
             self.direcao *= -1
 
         # Rotação do furacão
