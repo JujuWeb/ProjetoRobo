@@ -5,7 +5,9 @@ import random
 LARGURA = 900
 ALTURA = 500
 
+# -----------------------------------------
 # CLASSE BASE
+# -----------------------------------------
 class Entidade(pygame.sprite.Sprite):
     def __init__(self, x, y, velocidade):
         super().__init__()
@@ -18,29 +20,27 @@ class Entidade(pygame.sprite.Sprite):
         self.rect.y += dy
 
 
+# -----------------------------------------
 # JOGADOR
+# -----------------------------------------
 class Jogador(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 5)
 
-        # Lista de sprites
         self.sprites: List[pygame.Surface] = []
 
-        # Carrega imagens
+        # Carrega sprites
         jogador1 = pygame.image.load("assets/Astronaut.png").convert_alpha()
         jogador2 = pygame.image.load("assets/Astronaut1.png").convert_alpha()
 
-        # Aumenta o tamanho 
-        jogador1 = pygame.transform.scale(jogador1, (80, 80))  
+        jogador1 = pygame.transform.scale(jogador1, (80, 80))
         jogador2 = pygame.transform.scale(jogador2, (80, 80))
 
         self.sprites.append(jogador1)
         self.sprites.append(jogador2)
 
-        # Animação
         self.frame = 0
 
-        # Imagem inicial (usa o x,y recebidos, não valores fixos)
         self.image = self.sprites[0]
         self.rect = self.image.get_rect(center=(x, y))
 
@@ -64,19 +64,22 @@ class Jogador(Entidade):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.mover(self.velocidade, 0)
 
-        # limites (aplicados uma única vez)
+        # Limites da tela
         self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
         self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
 
-# TIRO (DO JOGADOR)
+# -----------------------------------------
+# TIRO DO JOGADOR
+# -----------------------------------------
 class Tiro(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 10)
-        tiro1 = pygame.image.load("assets/ataque.png").convert_alpha()
-        # Rotaciona a imagem
+
+        tiro1 = pygame.image.load("assets/tiro.png").convert_alpha()
         tiro1 = pygame.transform.rotate(tiro1, -135)
-        tiro1 = pygame.transform.scale(tiro1, (100, 100))
+        tiro1 = pygame.transform.scale(tiro1, (50, 50))
+
         self.image = tiro1
         self.rect = self.image.get_rect(center=(x, y))
 
@@ -85,52 +88,71 @@ class Tiro(Entidade):
         if self.rect.y < 0:
             self.kill()
 
+
+# -----------------------------------------
 # ROBO BASE
+# -----------------------------------------
 class Robo(Entidade):
     def __init__(self, x, y, velocidade):
         super().__init__(x, y, velocidade)
-        self.image.fill((255, 0, 0))  # vermelho
+        self.image.fill((255, 0, 0))
 
     def atualizar_posicao(self):
         raise NotImplementedError
 
 
-# ROBO EXEMPLO — ZigueZague
+# -----------------------------------------
+# ROBO ZIGUE-ZAGUE
+# -----------------------------------------
 class RoboZigueZague(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=3)
         self.direcao = 1
 
-        # Carrega imagem
         self.original_image = pygame.image.load("assets/furacao.png").convert_alpha()
         self.original_image = pygame.transform.scale(self.original_image, (60, 60))
 
         self.image = self.original_image
         self.rect = self.image.get_rect(center=(x, y))
 
-        # ângulo de rotação
-        self.angulo = 0  
+        self.angulo = 0
 
     def atualizar_posicao(self):
-        # Movimento para baixo
         self.rect.y += self.velocidade
-
-        # Zigue-zague forte e aleatório
         self.rect.x += self.direcao * random.randint(3, 8)
 
-        # Inverte direção ao bater na parede
+        # Bate na parede
         if self.rect.x <= 0 or self.rect.x >= LARGURA - self.image.get_width():
             self.direcao *= -1
 
-        # Rotação do furacão
-        self.angulo = (self.angulo + 10) % 360   # quanto maior → gira mais rápido
+        # Rotação
+        self.angulo = (self.angulo + 10) % 360
         self.image = pygame.transform.rotate(self.original_image, self.angulo)
 
-        # Recalcula o rect para manter centro
         centro = self.rect.center
         self.rect = self.image.get_rect(center=centro)
 
-        # Se sair da tela, some
+        if self.rect.y > ALTURA:
+            self.kill()
+
+    def update(self):
+        self.atualizar_posicao()
+
+
+# -----------------------------------------
+# ROBO LENTO — anda devagar em linha reta
+# -----------------------------------------
+class RoboLento(Robo):
+    def __init__(self, x, y):
+        super().__init__(x, y, velocidade=1)
+
+        self.image = pygame.image.load("assets/satelite.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 60))
+        self.rect = self.image.get_rect(center=(x, y))
+
+    def atualizar_posicao(self):
+        self.rect.y += self.velocidade
+
         if self.rect.y > ALTURA:
             self.kill()
 
