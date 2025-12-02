@@ -1,5 +1,6 @@
 import pygame
 import random
+import math
 from entidades import *
 
 pygame.init()
@@ -15,6 +16,8 @@ clock = pygame.time.Clock()
 
 fundo_img = pygame.image.load("assets/space.png").convert()
 fundo_img = pygame.transform.scale(fundo_img, (900, 500))
+logo_img = pygame.image.load("assets/logo.png").convert_alpha()
+logo_img = pygame.transform.scale(logo_img, (800, 350))
 
 todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
@@ -26,8 +29,12 @@ todos_sprites.add(jogador)
 pontos = 0
 spawn_timer = 0
 
+tempo_logo = 0  
+tempo_texto = 0
+texto_visivel = True
+
 tela = "menu"
-rodando = True
+rodando = True 
 
 while rodando:
     clock.tick(FPS)
@@ -49,6 +56,11 @@ while rodando:
                     tiro = Tiro(jogador.rect.centerx, jogador.rect.top)
                     todos_sprites.add(tiro)
                     tiros.add(tiro) 
+
+    tempo_texto += 1
+    if tempo_texto > 20:   # velocidade de piscar
+        texto_visivel = not texto_visivel
+        tempo_texto = 0
 
     # Lógica só quando estiver no jogo
     if tela == "jogo":
@@ -93,11 +105,17 @@ while rodando:
         TELA.blit(texto, (10, 10))
 
     elif tela == "menu":
-        font = pygame.font.Font("assets/DepartureMono-Regular.otf", 80)
-        logo = font.render("Logo", True, (255, 255, 255))
-        TELA.blit(logo, (350, 200))
+        tempo_logo += 0.05  
+    # movimento vertical senoidal
+        logo_y = 40 + math.sin(tempo_logo) * 10
+
+    # movimento horizontal senoidal
+        logo_x = 40 + math.cos(tempo_logo * 0.8) * 10   
+
+        TELA.blit(logo_img, (logo_x, logo_y))
         font = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
         texto = font.render("Pressione ENTER para começar!", True, (255, 255, 255))
-        TELA.blit(texto, (205, 350))
+        if texto_visivel:   # só desenha quando está "ligado"
+            TELA.blit(texto, (205, 350))
 
     pygame.display.flip()

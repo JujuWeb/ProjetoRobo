@@ -1,5 +1,6 @@
 from typing import List
 import pygame
+import random
 
 LARGURA = 900
 ALTURA = 500
@@ -103,14 +104,38 @@ class RoboZigueZague(Robo):
         super().__init__(x, y, velocidade=3)
         self.direcao = 1
 
-    def atualizar_posicao(self):
-        self.rect.y += self.velocidade
-        self.rect.x += self.direcao * 3
+        # Carrega imagem
+        self.original_image = pygame.image.load("assets/furacao.png").convert_alpha()
+        self.original_image = pygame.transform.scale(self.original_image, (60, 60))
 
-        if self.rect.x <= 0 or self.rect.x >= LARGURA - 40:
+        self.image = self.original_image
+        self.rect = self.image.get_rect(center=(x, y))
+
+        # ângulo de rotação
+        self.angulo = 0  
+
+    def atualizar_posicao(self):
+        # Movimento para baixo
+        self.rect.y += self.velocidade
+
+        # Zigue-zague forte e aleatório
+        self.rect.x += self.direcao * random.randint(3, 8)
+
+        # Inverte direção ao bater na parede
+        if self.rect.x <= 0 or self.rect.x >= LARGURA - self.image.get_width():
             self.direcao *= -1
+
+        # Rotação do furacão
+        self.angulo = (self.angulo + 10) % 360   # quanto maior → gira mais rápido
+        self.image = pygame.transform.rotate(self.original_image, self.angulo)
+
+        # Recalcula o rect para manter centro
+        centro = self.rect.center
+        self.rect = self.image.get_rect(center=centro)
+
+        # Se sair da tela, some
+        if self.rect.y > ALTURA:
+            self.kill()
 
     def update(self):
         self.atualizar_posicao()
-        if self.rect.y > ALTURA:
-            self.kill()
