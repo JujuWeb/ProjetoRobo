@@ -73,10 +73,10 @@ class Jogador(Entidade):
 class Tiro(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 10)
-        tiro1 = pygame.image.load("assets/tiro.png").convert_alpha()
+        tiro1 = pygame.image.load("assets/ataque.png").convert_alpha()
         # Rotaciona a imagem
         tiro1 = pygame.transform.rotate(tiro1, -135)
-        tiro1 = pygame.transform.scale(tiro1, (50, 50))
+        tiro1 = pygame.transform.scale(tiro1, (100, 100))
         self.image = tiro1
         self.rect = self.image.get_rect(center=(x, y))
 
