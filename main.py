@@ -29,12 +29,12 @@ todos_sprites.add(jogador)
 pontos = 0
 spawn_timer = 0
 
-tempo_logo = 0
+tempo_logo = 0  
 tempo_texto = 0
 texto_visivel = True
 
 tela = "menu"
-rodando = True
+rodando = True 
 
 while rodando:
     clock.tick(FPS)
@@ -48,7 +48,7 @@ while rodando:
             if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
                 tela = "jogo"
 
-        # GAME
+        # JOGO
         elif tela == "jogo":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
@@ -106,7 +106,7 @@ while rodando:
             todos_sprites.add(robo)
             spawn_timer = 0
 
-        # Colisão tiro x robô
+        # Colisão tiro vs inimigo
         colisao = pygame.sprite.groupcollide(inimigos, tiros, True, True)
         pontos += len(colisao)
 
@@ -164,4 +164,3 @@ while rodando:
         TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 10))
 
     pygame.display.flip()
-
