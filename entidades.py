@@ -122,7 +122,7 @@ class RoboZigueZague(Robo):
         self.rect.x += self.direcao * random.randint(3, 8)
 
         # Inverte direção ao bater na parede
-        if self.rect.x <= 0 or self.rect.x >= LARGURA - self.image.get_width():
+        if self.rect.centerx <= 0 or self.rect.centerx >= LARGURA:
             self.direcao *= -1
 
         # Rotação do furacão
