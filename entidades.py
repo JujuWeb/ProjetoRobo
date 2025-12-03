@@ -145,3 +145,33 @@ class RoboLento(Robo):
 
     def update(self):
         self.atualizar_posicao()
+
+
+
+# ROBO CAÇADOR 
+class RoboCacador(Robo):
+    def __init__(self, x, y, jogador):
+        super().__init__(x, y, velocidade=2)
+
+        self.jogador = jogador
+        self.image = pygame.image.load("assets/Nave_caçador.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (80, 80))
+        self.rect = self.image.get_rect(center=(x, y))
+
+    def atualizar_posicao(self):
+        
+        dx = self.jogador.rect.centerx - self.rect.centerx
+        dy = self.jogador.rect.centery - self.rect.centery
+
+        
+        distancia = max(1, (dx**2 + dy**2) ** 0.5)
+
+        self.rect.x += (dx / distancia) * self.velocidade
+        self.rect.y += (dy / distancia) * self.velocidade
+
+        
+        if self.rect.y > ALTURA + 40:
+            self.kill()
+
+    def update(self):
+        self.atualizar_posicao()
