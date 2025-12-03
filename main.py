@@ -97,7 +97,7 @@ while rodando:
 
         spawn_timer += 1
         if spawn_timer > 40:
-            tipo = random.choice(["lento", "zigue", "cacador", "rapido"])
+            tipo = random.choice(["lento", "zigue", "cacador", "rapido", "ciclico"])
 
 
             if tipo == "lento":
@@ -106,7 +106,8 @@ while rodando:
                 robo = RoboRapido(random.randint(40, LARGURA - 40), -40)
             elif tipo == "zigue":
                 robo = RoboZigueZague(random.randint(40, LARGURA - 40), -40)
-
+            elif tipo == "ciclico":
+                robo = RoboCiclico(random.randint(40, LARGURA - 40), -40)
             elif tipo == "cacador":
                 robo = RoboCacador(random.randint(40, LARGURA - 40), -40, jogador)
 

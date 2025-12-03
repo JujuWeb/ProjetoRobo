@@ -200,12 +200,50 @@ class RoboLento(Robo):
     def update(self):
         self.atualizar_posicao()
 
+class RoboCiclico(Robo):
+    def __init__(self, x, y):
 
+        super().__init__(x, y, velocidade=2)
+
+        self.image = pygame.image.load("assets/BluePlanet.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 60))
+        self.rect = self.image.get_rect(center=(x, y))
+
+        self.base_x = max(40, min(x, LARGURA - 40))
+        self.base_y = y
+
+        self.raio = 60
+        self.vel_giro = 0.4
+
+        self.tabela_x = [0, 1, 2, 3, 2, 1, 0, -1, -2, -3, -2, -1]
+        self.tabela_y = [-3, -2, -1, 0, 1, 2, 3, 2, 1, 0, -1, -2]
+
+        self.indice = 0
+        self.descida = 1
+
+    def atualizar_posicao(self):
+
+        self.base_y += self.descida
+
+        self.indice = (self.indice + self.vel_giro) % len(self.tabela_x)
+        i = int(self.indice)
+
+        cx = self.tabela_x[i] * self.raio / 3
+        cy = self.tabela_y[i] * self.raio / 3
+
+        self.rect.centerx = int(self.base_x + cx)
+        self.rect.centery = int(self.base_y + cy)
+
+        if self.rect.top > ALTURA:
+            self.kill()
+
+    def update(self):
+        self.atualizar_posicao()
 
 # ROBO CAÇADOR 
 class RoboCacador(Robo):
     def __init__(self, x, y, jogador):
-        super().__init__(x, y, velocidade=2)
+        super().__init__(x, y, velocidade=4)
 
         self.jogador = jogador
         self.image = pygame.image.load("assets/Nave_caçador.png").convert_alpha()
