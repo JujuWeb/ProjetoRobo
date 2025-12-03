@@ -5,6 +5,16 @@ import random
 LARGURA = 900
 ALTURA = 500
 
+# Explosão
+explosao_img = pygame.image.load("assets/EXPLOSÃO.png")
+explosao_frames = [
+    pygame.transform.scale(explosao_img, (32, 32)),
+    pygame.transform.scale(explosao_img, (64, 64)),
+    pygame.transform.scale(explosao_img, (120, 120)),
+    pygame.transform.scale(explosao_img, (64, 64)),
+    pygame.transform.scale(explosao_img, (32, 32)),
+]
+
 class Entidade(pygame.sprite.Sprite):
     def __init__(self, x, y, velocidade):
         super().__init__()
@@ -16,6 +26,29 @@ class Entidade(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
+class Explosao(pygame.sprite.Sprite):
+    def __init__(self, x, y):
+        super().__init__()
+        self.frames = explosao_frames
+        self.frame = 0
+        self.image = self.frames[self.frame]
+
+        # salva o centro fixo
+        self.center = (x, y)
+        self.rect = self.image.get_rect(center=self.center)
+
+        self.velocidade_anim = 0.4
+
+    def update(self):
+        self.frame += self.velocidade_anim
+
+        if int(self.frame) >= len(self.frames):
+            self.kill()
+            return
+
+        # troca de imagem mantendo o centro
+        self.image = self.frames[int(self.frame)]
+        self.rect = self.image.get_rect(center=self.center)
 
 # JOGADOR
 class Jogador(Entidade):
@@ -132,9 +165,13 @@ class RoboRapido(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=10)
 
-        self.image = pygame.image.load("assets/estrelacadente.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (60, 60))
+        img = pygame.image.load("assets/estrelacadente.png").convert_alpha()
+        img = pygame.transform.rotate(img, -50)
+        img = pygame.transform.scale(img, (80, 80))
+
+        self.image = img
         self.rect = self.image.get_rect(center=(x, y))
+
 
     def atualizar_posicao(self):
         self.rect.y += self.velocidade

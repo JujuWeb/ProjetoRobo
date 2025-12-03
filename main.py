@@ -115,8 +115,14 @@ while rodando:
             spawn_timer = 0
 
         # colisão tiro x inimigo
-        colisao = pygame.sprite.groupcollide(inimigos, tiros, True, True)
-        pontos += len(colisao)
+        colisoes = pygame.sprite.groupcollide(inimigos, tiros, True, True)
+
+        for inimigo in colisoes:
+            explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
+            todos_sprites.add(explosao)
+
+        pontos += len(colisoes)
+
 
         # colisão jogador x inimigo
         if pygame.sprite.spritecollide(jogador, inimigos, True):
