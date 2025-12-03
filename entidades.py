@@ -127,6 +127,23 @@ class RoboZigueZague(Robo):
     def update(self):
         self.atualizar_posicao()
 
+# ROBO RAPIDO
+class RoboRapido(Robo):
+    def __init__(self, x, y):
+        super().__init__(x, y, velocidade=10)
+
+        self.image = pygame.image.load("assets/estrelacadente.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 60))
+        self.rect = self.image.get_rect(center=(x, y))
+
+    def atualizar_posicao(self):
+        self.rect.y += self.velocidade
+
+        if self.rect.y > ALTURA:
+            self.kill()
+
+    def update(self):
+        self.atualizar_posicao()
 
 # ROBO LENTO
 class RoboLento(Robo):
