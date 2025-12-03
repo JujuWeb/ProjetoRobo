@@ -5,7 +5,7 @@ from entidades import *
 
 pygame.init()
 
-musica = pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
+pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
 pygame.mixer.music.play(-1)
 
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
@@ -43,12 +43,13 @@ while rodando:
         if event.type == pygame.QUIT:
             rodando = False
 
-        # MENU
+        # Menu
         if tela == "menu":
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                tela = "jogo"
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    tela = "jogo"
 
-        # JOGO
+        # Tela do jogo
         elif tela == "jogo":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
@@ -59,26 +60,31 @@ while rodando:
                 if event.key == pygame.K_p:
                     tela = "pause"
 
-        # PAUSE
+        # Tela de pausa
         elif tela == "pause":
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_p:
-                tela = "jogo"
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    tela = "jogo"
 
-        # GAME OVER
+        # Tela de game over
         elif tela == "gameover":
-            if event.type == pygame.KEYDOWN and event.key == pygame.K_RETURN:
-                tela = "jogo"
-                jogador.vida = 5
-                pontos = 0
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
 
-                inimigos.empty()
-                tiros.empty()
-                todos_sprites.empty()
-                todos_sprites.add(jogador)
+                    # música volta ao normal
+                    pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
+                    pygame.mixer.music.play(-1)
 
-                jogador.rect.centerx = LARGURA // 2
-                jogador.rect.centery = ALTURA - 60
-                pygame.mixer.music.rewind()
+                    tela = "jogo"
+                    jogador.vida = 5
+                    pontos = 0
+                    inimigos.empty()
+                    tiros.empty()
+                    todos_sprites.empty()
+                    todos_sprites.add(jogador)
+
+                    jogador.rect.centerx = LARGURA // 2
+                    jogador.rect.centery = ALTURA - 60
 
     # Piscar o texto no menu
     tempo_texto += 1
@@ -86,15 +92,11 @@ while rodando:
         texto_visivel = not texto_visivel
         tempo_texto = 0
 
-    # -------------------------------------
-    # LÓGICA DO JOGO
-    # -------------------------------------
+    # Lógica do jogo
     if tela == "jogo":
 
-        # SPWAN DOS ROBÔS
         spawn_timer += 1
         if spawn_timer > 40:
-
             tipo = random.choice(["lento", "zigue"])
 
             if tipo == "lento":
@@ -106,21 +108,23 @@ while rodando:
             todos_sprites.add(robo)
             spawn_timer = 0
 
-        # Colisão tiro vs inimigo
+        # colisão tiro x inimigo
         colisao = pygame.sprite.groupcollide(inimigos, tiros, True, True)
         pontos += len(colisao)
 
-        # Colisão jogador x robô
+        # colisão jogador x inimigo
         if pygame.sprite.spritecollide(jogador, inimigos, True):
             jogador.vida -= 1
             if jogador.vida <= 0:
                 tela = "gameover"
 
+                # música de game over
+                pygame.mixer.music.load("assets/gameovereal.mp3")
+                pygame.mixer.music.play()
+
         todos_sprites.update()
 
-    # -------------------------------------
-    # DESENHO DA TELA
-    # -------------------------------------
+    # Desenho da tela
     TELA.blit(fundo_img, (0, 0))
 
     if tela == "jogo":
@@ -164,3 +168,4 @@ while rodando:
         TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 10))
 
     pygame.display.flip()
+

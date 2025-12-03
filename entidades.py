@@ -5,9 +5,6 @@ import random
 LARGURA = 900
 ALTURA = 500
 
-# -----------------------------------------
-# CLASSE BASE
-# -----------------------------------------
 class Entidade(pygame.sprite.Sprite):
     def __init__(self, x, y, velocidade):
         super().__init__()
@@ -20,9 +17,7 @@ class Entidade(pygame.sprite.Sprite):
         self.rect.y += dy
 
 
-# -----------------------------------------
 # JOGADOR
-# -----------------------------------------
 class Jogador(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 5)
@@ -63,12 +58,11 @@ class Jogador(Entidade):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.mover(self.velocidade, 0)
 
-        # limites (aplicados uma única vez)
         self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
         self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
 
-# TIRO (DO JOGADOR)
+# TIRO DO JOGADOR
 class Tiro(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 10)
@@ -85,7 +79,6 @@ class Tiro(Entidade):
             self.kill()
 
 # ROBO BASE
-# -----------------------------------------
 class Robo(Entidade):
     def __init__(self, x, y, velocidade):
         super().__init__(x, y, velocidade)
@@ -95,7 +88,7 @@ class Robo(Entidade):
         raise NotImplementedError
 
 
-# ROBO EXEMPLO — ZigueZague
+# ROBO ZigueZague
 class RoboZigueZague(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=3)
@@ -118,7 +111,7 @@ class RoboZigueZague(Robo):
         self.rect.x += self.direcao * random.randint(3, 8)
 
         # Bate na parede
-        if self.rect.x <= 0 or self.rect.x >= LARGURA - self.image.get_width():
+        if self.rect.centerx <= 0 or self.rect.centerx >= LARGURA - self.image.get_width():
             self.direcao *= -1
 
         # Rotação do furacão
@@ -135,9 +128,7 @@ class RoboZigueZague(Robo):
         self.atualizar_posicao()
 
 
-# -----------------------------------------
-# ROBO LENTO — anda devagar em linha reta
-# -----------------------------------------
+# ROBO LENTO
 class RoboLento(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=1)
