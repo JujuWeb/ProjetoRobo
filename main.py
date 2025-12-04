@@ -4,6 +4,15 @@ import math
 from entidades import *
 
 pygame.init()
+pygame.mixer.init()  
+
+som_tiro = pygame.mixer.Sound("assets/som_tiro.mp3")           # som ao disparar
+som_estouro = pygame.mixer.Sound("assets/estouro.mp3")         # som quando tiro acerta robo
+som_colisao_jogador = pygame.mixer.Sound("assets/som_colisao.mp3")  # som quando jogador leva dano
+
+som_tiro.set_volume(1.0)
+som_estouro.set_volume(4.0)
+som_colisao_jogador.set_volume(1.0)
 
 pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
 pygame.mixer.music.play(-1)
@@ -53,6 +62,7 @@ while rodando:
         elif tela == "jogo":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_SPACE:
+                    som_tiro.play()  
                     tiro = Tiro(jogador.rect.centerx, jogador.rect.top)
                     todos_sprites.add(tiro)
                     tiros.add(tiro)
@@ -99,7 +109,6 @@ while rodando:
         if spawn_timer > 40:
             tipo = random.choice(["lento", "zigue", "cacador", "rapido", "ciclico"])
 
-
             if tipo == "lento":
                 robo = RoboLento(random.randint(40, LARGURA - 40), -40)
             elif tipo == "rapido":
@@ -119,14 +128,15 @@ while rodando:
         colisoes = pygame.sprite.groupcollide(inimigos, tiros, True, True)
 
         for inimigo in colisoes:
+            som_estouro.play()  
             explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
             todos_sprites.add(explosao)
 
         pontos += len(colisoes)
 
-
         # colisão jogador x inimigo
         if pygame.sprite.spritecollide(jogador, inimigos, True):
+            som_colisao_jogador.play()  
             jogador.vida -= 1
             if jogador.vida <= 0:
                 tela = "gameover"
@@ -144,41 +154,45 @@ while rodando:
         todos_sprites.draw(TELA)
         font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
         texto = font.render(f"Vida: {jogador.vida} | Pontos: {pontos}",
-                            True, (255, 255, 255))
+        True, (255, 255, 255))
         TELA.blit(texto, (10, 10))
 
     elif tela == "menu":
         tempo_logo += 0.05
         logo_y = 40 + math.sin(tempo_logo) * 10
-        logo_x = 40 + math.cos(tempo_logo * 0.8) * 10
+        logo_x = 35 + math.cos(tempo_logo * 0.8) * 10
         TELA.blit(logo_img, (logo_x, logo_y))
 
-        font = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
-        texto = font.render("Pressione ENTER para começar!",
-                            True, (255, 255, 255))
+        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
+        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 16)
+
+        texto = font1.render("Pressione ENTER para começar!", True, (255, 255, 255))
+        texto2 = font2.render("(Use as teclas WASD/setas para mover e Espaço para atirar)", True, (255, 255, 255))
+  
         if texto_visivel:
             TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, 350))
+        TELA.blit(texto2, (160, 400))     
 
     elif tela == "pause":
-        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 40)
-        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 25)
-        texto = font1.render("JOGO PAUSADO", True, (255, 255, 255))
-        texto2 = font2.render("Pressione P para continuar",
-                              True, (255, 255, 255))
+        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 50)
+        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
 
-        TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, ALTURA//2 - 40))
-        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 10))
+        texto = font1.render("JOGO PAUSADO", True, (255, 255, 255))
+        texto2 = font2.render("Pressione P para continuar!", True, (255, 255, 255))
+        
+        if texto_visivel:
+            TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, ALTURA//2 - 40))
+        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 30))
 
     elif tela == "gameover":
-        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 40)
-        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 25)
+        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 50)
+        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
 
         texto = font1.render("GAME OVER", True, (255, 50, 50))
-        texto2 = font2.render("Pressione ENTER para reiniciar",
-                              True, (255, 255, 255))
+        texto2 = font2.render("Pressione ENTER para reiniciar!", True, (255, 255, 255))
 
-        TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, ALTURA//2 - 40))
-        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 10))
+        if texto_visivel:
+            TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, ALTURA//2 - 40))
+        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 30))
 
     pygame.display.flip()
-
