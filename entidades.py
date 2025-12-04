@@ -137,18 +137,17 @@ class RoboZigueZague(Robo):
         self.angulo = 0  
 
     def atualizar_posicao(self):
-        # Movimento para baixo
         self.rect.y += self.velocidade
 
         # Zigue-zague forte e aleatório
         self.rect.x += self.direcao * random.randint(3, 8)
 
-        # Bate na parede
+        # riconcheteio com a parede
         if self.rect.centerx <= 0 or self.rect.centerx >= LARGURA - self.image.get_width():
             self.direcao *= -1
 
         # Rotação do furacão
-        self.angulo = (self.angulo + 15) % 360   # quanto maior → gira mais rápido
+        self.angulo = (self.angulo + 15) % 360
         self.image = pygame.transform.rotate(self.original_image, self.angulo)
 
         centro = self.rect.center
@@ -266,3 +265,8 @@ class RoboCacador(Robo):
 
     def update(self):
         self.atualizar_posicao()
+
+# BOSS FINAL
+class Boss(Robo):
+    def __init__(self, x, y):
+        super().__init__(x, y, velocidade=3)
