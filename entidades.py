@@ -270,8 +270,8 @@ class RoboSaltador(Robo):
         super().__init__(x, y, velocidade=4)
 
         # sprite
-        self.image_original = pygame.image.load("assets/RedPlanet.png").convert_alpha()
-        self.image_original = pygame.transform.scale(self.image_original, (60, 60))
+        self.image_original = pygame.image.load("assets/BluePlanet.png").convert_alpha()
+        self.image_original = pygame.transform.scale(self.image_original, (50, 50))
         self.image = self.image_original
         self.rect = self.image.get_rect(center=(x, y))
 
