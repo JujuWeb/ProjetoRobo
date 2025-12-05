@@ -15,6 +15,7 @@ explosao_frames = [
     pygame.transform.scale(explosao_img, (32, 32)),
 ]
 
+
 class Entidade(pygame.sprite.Sprite):
     def __init__(self, x, y, velocidade):
         super().__init__()
@@ -26,6 +27,7 @@ class Entidade(pygame.sprite.Sprite):
         self.rect.x += dx
         self.rect.y += dy
 
+
 class Explosao(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__()
@@ -33,10 +35,8 @@ class Explosao(pygame.sprite.Sprite):
         self.frame = 0
         self.image = self.frames[self.frame]
 
-        # salva o centro fixo
         self.center = (x, y)
         self.rect = self.image.get_rect(center=self.center)
-
         self.velocidade_anim = 0.4
 
     def update(self):
@@ -46,9 +46,9 @@ class Explosao(pygame.sprite.Sprite):
             self.kill()
             return
 
-        # troca de imagem mantendo o centro
         self.image = self.frames[int(self.frame)]
         self.rect = self.image.get_rect(center=self.center)
+
 
 # JOGADOR
 class Jogador(Entidade):
@@ -60,8 +60,7 @@ class Jogador(Entidade):
         jogador1 = pygame.image.load("assets/Astronaut.png").convert_alpha()
         jogador2 = pygame.image.load("assets/Astronaut1.png").convert_alpha()
 
-        # Aumenta o tamanho 
-        jogador1 = pygame.transform.scale(jogador1, (80, 80))  
+        jogador1 = pygame.transform.scale(jogador1, (80, 80))
         jogador2 = pygame.transform.scale(jogador2, (80, 80))
 
         self.sprites.append(jogador1)
@@ -95,12 +94,11 @@ class Jogador(Entidade):
         self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
 
-# TIRO DO JOGADOR
+# TIRO
 class Tiro(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 10)
         tiro1 = pygame.image.load("assets/ataque.png").convert_alpha()
-        # Rotaciona a imagem
         tiro1 = pygame.transform.rotate(tiro1, -135)
         tiro1 = pygame.transform.scale(tiro1, (100, 100))
         self.image = tiro1
@@ -111,17 +109,18 @@ class Tiro(Entidade):
         if self.rect.y < 0:
             self.kill()
 
+
 # ROBO BASE
 class Robo(Entidade):
     def __init__(self, x, y, velocidade):
         super().__init__(x, y, velocidade)
-        self.image.fill((255, 0, 0))  # vermelho
+        self.image.fill((255, 0, 0))
 
     def atualizar_posicao(self):
         raise NotImplementedError
 
 
-# ROBO ZigueZague
+# ROBO ZIGUE ZAGUE
 class RoboZigueZague(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=3)
@@ -133,20 +132,16 @@ class RoboZigueZague(Robo):
         self.image = self.original_image
         self.rect = self.image.get_rect(center=(x, y))
 
-        # ângulo de rotação
         self.angulo = 0  
 
     def atualizar_posicao(self):
         self.rect.y += self.velocidade
 
-        # Zigue-zague forte e aleatório
         self.rect.x += self.direcao * random.randint(3, 8)
 
-        # riconcheteio com a parede
         if self.rect.centerx <= 0 or self.rect.centerx >= LARGURA - self.image.get_width():
             self.direcao *= -1
 
-        # Rotação do furacão
         self.angulo = (self.angulo + 15) % 360
         self.image = pygame.transform.rotate(self.original_image, self.angulo)
 
@@ -159,7 +154,8 @@ class RoboZigueZague(Robo):
     def update(self):
         self.atualizar_posicao()
 
-# ROBO RAPIDO
+
+# ROBO RÁPIDO
 class RoboRapido(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=12)
@@ -171,7 +167,6 @@ class RoboRapido(Robo):
         self.image = img
         self.rect = self.image.get_rect(center=(x, y))
 
-
     def atualizar_posicao(self):
         self.rect.y += self.velocidade
 
@@ -180,6 +175,7 @@ class RoboRapido(Robo):
 
     def update(self):
         self.atualizar_posicao()
+
 
 # ROBO LENTO
 class RoboLento(Robo):
@@ -199,6 +195,8 @@ class RoboLento(Robo):
     def update(self):
         self.atualizar_posicao()
 
+
+# ROBO CÍCLICO
 class RoboCiclico(Robo):
     def __init__(self, x, y):
 
@@ -221,7 +219,6 @@ class RoboCiclico(Robo):
         self.descida = 1
 
     def atualizar_posicao(self):
-
         self.base_y += self.descida
 
         self.indice = (self.indice + self.vel_giro) % len(self.tabela_x)
@@ -239,7 +236,8 @@ class RoboCiclico(Robo):
     def update(self):
         self.atualizar_posicao()
 
-# ROBO CAÇADOR 
+
+# ROBO CAÇADOR
 class RoboCacador(Robo):
     def __init__(self, x, y, jogador):
         super().__init__(x, y, velocidade=5)
@@ -251,7 +249,6 @@ class RoboCacador(Robo):
         self.rect = self.image.get_rect(center=(x, y))
 
     def atualizar_posicao(self):
-        
         dx = self.jogador.rect.centerx - self.rect.centerx
         dy = self.jogador.rect.centery - self.rect.centery
 
@@ -266,7 +263,53 @@ class RoboCacador(Robo):
     def update(self):
         self.atualizar_posicao()
 
-# BOSS FINAL
+
+# ROBO SALTADOR — PARABÓLICO
+class RoboSaltador(Robo):
+    def __init__(self, x, y):
+        super().__init__(x, y, velocidade=4)
+
+        # sprite
+        self.image_original = pygame.image.load("assets/RedPlanet.png").convert_alpha()
+        self.image_original = pygame.transform.scale(self.image_original, (60, 60))
+        self.image = self.image_original
+        self.rect = self.image.get_rect(center=(x, y))
+
+        # salto parabólico
+        self.altura_salto = random.randint(60, 120)
+        self.tempo_total = random.randint(50, 90)
+        self.tempo_atual = 0
+
+        self.dx = random.choice([-1, 1]) * random.randint(2, 4)
+
+    def atualizar_posicao(self):
+        self.tempo_atual += 1
+
+        self.rect.x += self.dx
+
+        if self.rect.x < 0 or self.rect.x > LARGURA - self.image.get_width():
+            self.dx *= -1
+
+        self.rect.y += 4
+
+        t = self.tempo_atual / self.tempo_total
+        altura = -4 * self.altura_salto * (t - 0.5) ** 2 + self.altura_salto
+
+        self.rect.y += int(-altura / 10) + 3
+
+        if self.tempo_atual >= self.tempo_total:
+            self.tempo_atual = 0
+            self.altura_salto = random.randint(60, 120)
+            self.tempo_total = random.randint(50, 90)
+
+        if self.rect.y > ALTURA:
+            self.kill()
+
+    def update(self):
+        self.atualizar_posicao()
+
+
+# BOSS (AINDA VAZIO)
 class Boss(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=3)
