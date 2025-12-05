@@ -1,6 +1,7 @@
 from typing import List
 import pygame
 import random
+import os
 
 LARGURA = 900
 ALTURA = 500
@@ -55,6 +56,9 @@ class Jogador(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 5)
 
+        self.vel_base = 5          # velocidade normal
+        self.tempo_vel = 0         # tempo que o power-up dura
+
         self.sprites: List[pygame.Surface] = []
 
         jogador1 = pygame.image.load("assets/Astronaut.png").convert_alpha()
@@ -73,11 +77,15 @@ class Jogador(Entidade):
         self.vida = 5
 
     def update(self):
+        # animação
         self.frame += 0.03
         if self.frame >= len(self.sprites):
             self.frame = 0
-
         self.image = self.sprites[int(self.frame)]
+
+        #  VOLTAR À VELOCIDADE NORMAL QUANDO O TEMPO ACABAR
+        if pygame.time.get_ticks() > self.tempo_vel:
+            self.velocidade = self.vel_base
 
         keys = pygame.key.get_pressed()
 
@@ -90,9 +98,9 @@ class Jogador(Entidade):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.mover(self.velocidade, 0)
 
+        # limites
         self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
         self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
-
 
 # TIRO
 class Tiro(Entidade):
@@ -202,8 +210,8 @@ class RoboCiclico(Robo):
 
         super().__init__(x, y, velocidade=2)
 
-        self.image = pygame.image.load("assets/UfoBlue.png").convert_alpha()
-        self.image = pygame.transform.scale(self.image, (50, 50))
+        self.image = pygame.image.load("assets/UfoGrey.png").convert_alpha()
+        self.image = pygame.transform.scale(self.image, (60, 60))
         self.rect = self.image.get_rect(center=(x, y))
 
         self.base_x = max(40, min(x, LARGURA - 40))
@@ -270,8 +278,8 @@ class RoboSaltador(Robo):
         super().__init__(x, y, velocidade=4)
 
         # sprite
-        self.image_original = pygame.image.load("assets/BluePlanet.png").convert_alpha()
-        self.image_original = pygame.transform.scale(self.image_original, (50, 50))
+        self.image_original = pygame.image.load("assets/Satelite2.png").convert_alpha()
+        self.image_original = pygame.transform.scale(self.image_original, (80, 80))
         self.image = self.image_original
         self.rect = self.image.get_rect(center=(x, y))
 
@@ -313,3 +321,34 @@ class RoboSaltador(Robo):
 class Boss(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=3)
+
+
+class PowerUp(pygame.sprite.Sprite):
+    def __init__(self, x, y, cor=(255,255,255), image_path=None):
+        super().__init__()
+        
+        if image_path and os.path.exists(image_path):
+            img = pygame.image.load(image_path).convert_alpha()
+            self.image = pygame.transform.scale(img, (30, 30))
+        else:
+            self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
+            self.image.fill(cor)
+        self.rect = self.image.get_rect(center=(x, y))
+        self.velocidade = 2
+
+    def update(self):
+        self.rect.y += self.velocidade
+        if self.rect.y > ALTURA:
+            self.kill()
+
+class PowerUpVelocidade(PowerUp):
+    def __init__(self, x, y):
+        super().__init__(x, y, cor=(255, 255, 0), image_path="assets/PurplePlanet.png")
+
+class PowerUpTiroTriplo(PowerUp):
+    def __init__(self, x, y):
+        super().__init__(x, y, cor=(128, 0, 128), image_path="assets/BluePlanet.png")
+
+class PowerUpVidaExtra(PowerUp):
+    def __init__(self, x, y):
+        super().__init__(x, y, cor=(0, 255, 0), image_path="assets/RedPlanet.png")

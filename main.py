@@ -4,7 +4,7 @@ import math
 from entidades import *
 
 pygame.init()
-pygame.mixer.init()  
+pygame.mixer.init()
 
 som_tiro = pygame.mixer.Sound("assets/som_tiro.mp3")
 som_estouro = pygame.mixer.Sound("assets/estouro.mp3")
@@ -31,6 +31,7 @@ logo_img = pygame.transform.scale(logo_img, (800, 350))
 todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
 tiros = pygame.sprite.Group()
+powerups = pygame.sprite.Group()
 
 jogador = Jogador(LARGURA // 2, ALTURA - 60)
 todos_sprites.add(jogador)
@@ -39,12 +40,14 @@ pontos = 0
 recorde = 0
 spawn_timer = 0
 
-tempo_logo = 0  
+tempo_logo = 0
 tempo_texto = 0
 texto_visivel = True
 
+DURACAO_POWERUP_MS = 10000
+
 tela = "menu"
-rodando = True 
+rodando = True
 
 while rodando:
     clock.tick(FPS)
@@ -126,6 +129,12 @@ while rodando:
             explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
             todos_sprites.add(explosao)
 
+            if random.random() < 0.015:
+                p_tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
+                powerup = p_tipo(inimigo.rect.centerx, inimigo.rect.centery)
+                todos_sprites.add(powerup)
+                powerups.add(powerup)
+
         pontos += len(colisoes)
 
         if pygame.sprite.spritecollide(jogador, inimigos, True):
@@ -143,6 +152,22 @@ while rodando:
 
         todos_sprites.update()
 
+        powerup_col = pygame.sprite.spritecollide(jogador, powerups, True)
+        for p in powerup_col:
+            current_time = pygame.time.get_ticks()
+
+            if isinstance(p, PowerUpVelocidade):
+                if not hasattr(jogador, "vel_base"):
+                    jogador.vel_base = getattr(jogador, "velocidade", 5)
+                jogador.velocidade = 8
+                jogador.tempo_vel = current_time + DURACAO_POWERUP_MS
+
+            elif isinstance(p, PowerUpTiroTriplo):
+                jogador.tempo_tiro_triplo = current_time + DURACAO_POWERUP_MS
+                
+            elif isinstance(p, PowerUpVidaExtra):
+                jogador.vida += 1
+                
     TELA.blit(fundo_img, (0, 0))
 
     if tela == "jogo":
@@ -162,10 +187,10 @@ while rodando:
 
         texto = font1.render("Pressione ENTER para começar!", True, (255, 255, 255))
         texto2 = font2.render("(Use WASD/setas para mover e Espaço para atirar)", True, (255, 255, 255))
-  
+
         if texto_visivel:
             TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, 350))
-        TELA.blit(texto2, (160, 400))     
+        TELA.blit(texto2, (160, 400))
 
     elif tela == "pause":
         font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 50)
