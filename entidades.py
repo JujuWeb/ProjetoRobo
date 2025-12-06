@@ -147,7 +147,9 @@ class RoboZigueZague(Robo):
 
         self.rect.x += self.direcao * random.randint(3, 8)
 
-        if self.rect.centerx <= 0 or self.rect.centerx >= LARGURA - self.image.get_width():
+        larg = self.original_image.get_width()
+
+        if self.rect.centerx <= larg/2 or self.rect.centerx >= LARGURA - larg/2:
             self.direcao *= -1
 
         self.angulo = (self.angulo + 15) % 360

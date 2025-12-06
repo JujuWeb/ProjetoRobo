@@ -18,7 +18,7 @@ pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
 pygame.mixer.music.play(-1)
 
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
-pygame.display.set_caption("Robot Defense - Template")
+pygame.display.set_caption("Astro Combat")
 
 FPS = 60
 clock = pygame.time.Clock()
@@ -63,11 +63,21 @@ while rodando:
 
         elif tela == "jogo":
             if event.type == pygame.KEYDOWN:
+
                 if event.key == pygame.K_SPACE:
                     som_tiro.play()
+
+                    # Tiro normal
                     tiro = Tiro(jogador.rect.centerx, jogador.rect.top)
                     todos_sprites.add(tiro)
                     tiros.add(tiro)
+
+                    # Tiro triplo
+                    if pygame.time.get_ticks() < getattr(jogador, "tempo_tiro_triplo", 0):
+                        tiro_esq = Tiro(jogador.rect.centerx - 20, jogador.rect.top)
+                        tiro_dir = Tiro(jogador.rect.centerx + 20, jogador.rect.top)
+                        todos_sprites.add(tiro_esq, tiro_dir)
+                        tiros.add(tiro_esq, tiro_dir)
 
                 if event.key == pygame.K_p:
                     tela = "pause"
@@ -129,7 +139,7 @@ while rodando:
             explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
             todos_sprites.add(explosao)
 
-            if random.random() < 0.015:
+            if random.random() < 0.035:
                 p_tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
                 powerup = p_tipo(inimigo.rect.centerx, inimigo.rect.centery)
                 todos_sprites.add(powerup)
@@ -190,7 +200,7 @@ while rodando:
 
         if texto_visivel:
             TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, 350))
-        TELA.blit(texto2, (160, 400))
+            TELA.blit(texto2, (LARGURA//1.9 - texto.get_width()//2, 395))
 
     elif tela == "pause":
         font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 50)
