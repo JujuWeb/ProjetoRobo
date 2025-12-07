@@ -81,6 +81,7 @@ while rodando:
 
                 if event.key == pygame.K_p:
                     tela = "pause"
+                    
 
         elif tela == "pause":
             if event.type == pygame.KEYDOWN:
@@ -189,7 +190,7 @@ while rodando:
     elif tela == "menu":
         tempo_logo += 0.05
         logo_y = 40 + math.sin(tempo_logo) * 10
-        logo_x = 35 + math.cos(tempo_logo * 0.8) * 10
+        logo_x = 25 + math.cos(tempo_logo * 0.8) * 10
         TELA.blit(logo_img, (logo_x, logo_y))
 
         font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)

@@ -274,7 +274,7 @@ class RoboCacador(Robo):
         self.atualizar_posicao()
 
 
-# ROBO SALTADOR — PARABÓLICO
+# ROBO SALTADOR
 class RoboSaltador(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=4)
@@ -319,7 +319,7 @@ class RoboSaltador(Robo):
         self.atualizar_posicao()
 
 
-# BOSS (AINDA VAZIO)
+# BOSS
 class Boss(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=3)
