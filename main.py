@@ -1,6 +1,7 @@
 import pygame
 import random
 import math
+import os
 from entidades import *
 
 pygame.init()
@@ -49,6 +50,12 @@ DURACAO_POWERUP_MS = 10000
 tela = "menu"
 rodando = True
 
+fundo_atual = 1
+transicao = False
+alpha = 0
+escurecendo = True
+transicao_feita = False
+
 while rodando:
     clock.tick(FPS)
 
@@ -81,7 +88,6 @@ while rodando:
 
                 if event.key == pygame.K_p:
                     tela = "pause"
-                    
 
         elif tela == "pause":
             if event.type == pygame.KEYDOWN:
@@ -112,8 +118,16 @@ while rodando:
 
     if tela == "jogo":
 
+        if pontos < 150:
+            tempo_spawn = 40
+        elif pontos < 200:
+            tempo_spawn = 25
+        else:
+            tempo_spawn = 18
+
         spawn_timer += 1
-        if spawn_timer > 40:
+        # alterado aqui
+        if spawn_timer > tempo_spawn:
             tipo = random.choice(["lento", "zigue", "cacador", "rapido", "ciclico", "saltador"])
 
             if tipo == "lento":
@@ -132,6 +146,11 @@ while rodando:
             inimigos.add(robo)
             todos_sprites.add(robo)
             spawn_timer = 0
+
+        if pontos >= 200 and not transicao and not transicao_feita:
+            transicao = True
+            escurecendo = True
+            alpha = 0
 
         colisoes = pygame.sprite.groupcollide(inimigos, tiros, True, True)
 
@@ -230,5 +249,35 @@ while rodando:
         TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 30))
         TELA.blit(texto3, (LARGURA//2 - texto3.get_width()//2, ALTURA//2 + 60))
         TELA.blit(texto4, (LARGURA//2 - texto4.get_width()//2, ALTURA//2 + 90))
+
+    if transicao:
+        overlay = pygame.Surface((LARGURA, ALTURA))
+        overlay.fill((0, 0, 0))
+
+        if escurecendo:
+            alpha += 5
+            if alpha >= 255:
+                alpha = 255
+                escurecendo = False
+
+                fundo_atual += 1
+                novo_fundo = f"assets/space{fundo_atual}.png"
+
+                if os.path.exists(novo_fundo):
+                    fundo_img = pygame.image.load(novo_fundo).convert()
+                    fundo_img = pygame.transform.scale(fundo_img, (LARGURA, ALTURA))
+                else:
+                    fundo_img = pygame.transform.flip(fundo_img, True, False)
+
+        else:
+            alpha -= 5
+            if alpha <= 0:
+                alpha = 0
+                transicao = False 
+                transicao_feita = True
+
+
+        overlay.set_alpha(alpha)
+        TELA.blit(overlay, (0, 0))
 
     pygame.display.flip()
