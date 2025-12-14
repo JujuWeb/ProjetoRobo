@@ -2,6 +2,7 @@ from typing import List
 import pygame
 import random
 import os
+import math
 
 LARGURA = 900
 ALTURA = 500
@@ -320,9 +321,149 @@ class RoboSaltador(Robo):
 
 
 # BOSS
+# BOSS
 class Boss(Robo):
     def __init__(self, x, y):
-        super().__init__(x, y, velocidade=3)
+        super().__init__(x, y, velocidade=1.5)
+        
+        # Carregar a sprite alien1.png
+        try:
+            self.image_original = pygame.image.load("assets/alien1.png").convert_alpha()
+            # Ajustar o tamanho da sprite (você pode mudar os valores 120, 120)
+            self.image_original = pygame.transform.scale(self.image_original, (120, 120))
+            self.image = self.image_original.copy()
+        except:
+            # Fallback: se a imagem não existir, usa o quadrado vermelho
+            self.image = pygame.Surface((120, 120))
+            self.image.fill((255, 0, 0))
+            pygame.draw.rect(self.image, (255, 255, 255), self.image.get_rect(), 4)
+            
+        self.rect = self.image.get_rect(center=(x, y))
+        
+        # Atributos do boss
+        self.vida = 30  # Vida ajustada para aparecer aos 40 pontos
+        self.vida_max = 30
+        self.vel_giro = 0.5
+        self.angulo = 0
+        self.raio = 150
+        self.centro_x = x
+        self.centro_y = y
+        self.tempo_tiro = 0
+        self.intervalo_tiro = 60  # Dispara a cada 60 frames (1 segundo a 60 FPS)
+        self.padrao_movimento = 0  # 0: círculo, 1: vai e vem horizontal, 2: vai e vem vertical
+        self.tempo_padrao = 0
+        
+    def atualizar_posicao(self):
+        self.tempo_padrao += 1
+        
+        # Alterna padrão de movimento a cada 5 segundos
+        if self.tempo_padrao > 300:  # 300 frames = 5 segundos a 60 FPS
+            self.tempo_padrao = 0
+            self.padrao_movimento = (self.padrao_movimento + 1) % 3
+            
+        if self.padrao_movimento == 0:  # Movimento circular
+            self.angulo += self.vel_giro
+            self.rect.centerx = self.centro_x + math.cos(math.radians(self.angulo)) * self.raio
+            self.rect.centery = self.centro_y + math.sin(math.radians(self.angulo)) * self.raio
+        elif self.padrao_movimento == 1:  # Vai e vem horizontal
+            self.angulo += self.vel_giro
+            self.rect.centerx = self.centro_x + math.cos(math.radians(self.angulo)) * 200
+        else:  # Vai e vem vertical
+            self.angulo += self.vel_giro
+            self.rect.centery = self.centro_y + math.sin(math.radians(self.angulo)) * 100
+            
+        # Não deixa o boss sair da tela
+        self.rect.x = max(60, min(self.rect.x, LARGURA - 60))
+        self.rect.y = max(60, min(self.rect.y, ALTURA - 200))
+
+    def atirar(self, grupo_tiros, grupo_sprites):
+        """O boss dispara tiros em padrões diferentes"""
+        self.tempo_tiro += 1
+        if self.tempo_tiro >= self.intervalo_tiro:
+            self.tempo_tiro = 0
+            
+            # Padrão de tiro baseado no padrão de movimento
+            if self.padrao_movimento == 0:  # Tiro em círculo (8 direções)
+                for i in range(8):
+                    angulo_tiro = i * 45
+                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
+                    grupo_tiros.add(tiro_boss)
+                    grupo_sprites.add(tiro_boss)
+            elif self.padrao_movimento == 1:  # Tiro em leque (5 direções)
+                for i in range(5):
+                    angulo_tiro = -60 + i * 30
+                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
+                    grupo_tiros.add(tiro_boss)
+                    grupo_sprites.add(tiro_boss)
+            else:  # Tiro para baixo em 3 direções
+                for i in range(3):
+                    angulo_tiro = -15 + i * 15
+                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
+                    grupo_tiros.add(tiro_boss)
+                    grupo_sprites.add(tiro_boss)
+
+    def update(self):
+        self.atualizar_posicao()
+        
+        # Criar uma cópia da imagem original para não distorcer
+        self.image = self.image_original.copy()
+        
+        # Desenhar barra de vida em uma superfície separada
+        barra_surface = pygame.Surface((120, 30), pygame.SRCALPHA)
+        
+        # Fundo da barra de vida (vermelho)
+        pygame.draw.rect(barra_surface, (255, 0, 0, 180), (0, 0, 100, 15))
+        
+        # Vida atual (verde)
+        vida_width = 100 * (self.vida / self.vida_max)
+        pygame.draw.rect(barra_surface, (0, 255, 0, 180), (0, 0, vida_width, 15))
+        
+        # Borda da barra
+        pygame.draw.rect(barra_surface, (255, 255, 255, 200), (0, 0, 100, 15), 1)
+        
+        # Texto "BOSS"
+        font = pygame.font.Font(None, 18)
+        texto = font.render("BOSS", True, (255, 255, 255))
+        texto_rect = texto.get_rect(center=(50, 7))
+        barra_surface.blit(texto, texto_rect)
+        
+        # Adicionar a barra de vida à imagem do boss
+        self.image.blit(barra_surface, (10, -20))
+
+
+class TiroBoss(Tiro):
+    def __init__(self, x, y, angulo):
+        # Não chama super().__init__ porque queremos comportamento diferente
+        pygame.sprite.Sprite.__init__(self)
+        self.velocidade = 4
+        self.angulo = math.radians(angulo)
+        
+        # Usar EXATAMENTE a mesma sprite do tiro do jogador
+        try:
+            # Mesma transformação do tiro do jogador
+            tiro_img = pygame.image.load("assets/ataque.png").convert_alpha()
+            tiro_img = pygame.transform.rotate(tiro_img, -135)
+            
+            # Tamanho um pouco menor que o do jogador (ajuste conforme necessário)
+            tiro_img = pygame.transform.scale(tiro_img, (70, 70))
+            self.image = tiro_img
+        except:
+            # Fallback: se a imagem não existir
+            self.image = pygame.Surface((25, 25))
+            self.image.fill((255, 165, 0))  # Laranja
+            pygame.draw.circle(self.image, (255, 255, 0), (12, 12), 10)  # Com círculo amarelo
+            
+        self.rect = self.image.get_rect(center=(x, y))
+        
+    def update(self):
+        # Movimento baseado no ângulo (direções variadas)
+        self.rect.x += math.cos(self.angulo) * self.velocidade
+        self.rect.y += math.sin(self.angulo) * self.velocidade
+        
+        # Remove se sair da tela (com margem maior)
+        if (self.rect.y < -100 or self.rect.y > ALTURA + 100 or 
+            self.rect.x < -100 or self.rect.x > LARGURA + 100):
+            self.kill()
 
 
 class PowerUp(pygame.sprite.Sprite):

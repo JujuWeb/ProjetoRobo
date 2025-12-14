@@ -10,10 +10,14 @@ pygame.mixer.init()
 som_tiro = pygame.mixer.Sound("assets/som_tiro.mp3")
 som_estouro = pygame.mixer.Sound("assets/estouro.mp3")
 som_colisao_jogador = pygame.mixer.Sound("assets/som_colisao.mp3")
+som_boss_hit = pygame.mixer.Sound("assets/som_colisao.mp3")  # Usando som existente para hits no boss
+som_boss_morto = pygame.mixer.Sound("assets/estouro.mp3")  # Usando explosão para boss morto
 
 som_tiro.set_volume(1.0)
 som_estouro.set_volume(4.0)
 som_colisao_jogador.set_volume(1.0)
+som_boss_hit.set_volume(0.7)
+som_boss_morto.set_volume(5.0)
 
 pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
 pygame.mixer.music.play(-1)
@@ -32,6 +36,7 @@ logo_img = pygame.transform.scale(logo_img, (800, 350))
 todos_sprites = pygame.sprite.Group()
 inimigos = pygame.sprite.Group()
 tiros = pygame.sprite.Group()
+tiros_boss = pygame.sprite.Group()
 powerups = pygame.sprite.Group()
 
 jogador = Jogador(LARGURA // 2, ALTURA - 60)
@@ -55,6 +60,13 @@ transicao = False
 alpha = 0
 escurecendo = True
 transicao_feita = False
+
+# Variáveis para o boss
+boss_ativo = False
+boss = None
+boss_spawned = False
+boss_derrotado = False
+tempo_boss_morto = 0
 
 while rodando:
     clock.tick(FPS)
@@ -105,11 +117,19 @@ while rodando:
                     pontos = 0
                     inimigos.empty()
                     tiros.empty()
+                    tiros_boss.empty()
                     todos_sprites.empty()
                     todos_sprites.add(jogador)
 
                     jogador.rect.centerx = LARGURA // 2
                     jogador.rect.centery = ALTURA - 60
+                    
+                    # Resetar boss
+                    boss_ativo = False
+                    boss = None
+                    boss_spawned = False
+                    boss_derrotado = False
+                    tempo_boss_morto = 0
 
     tempo_texto += 1
     if tempo_texto > 20:
@@ -117,41 +137,87 @@ while rodando:
         tempo_texto = 0
 
     if tela == "jogo":
+        # SPAWN DE INIMIGOS NORMAIS (apenas se não houver boss ativo)
+        if not boss_ativo and not boss_derrotado:
+            if pontos < 150:
+                tempo_spawn = 40
+            elif pontos < 200:
+                tempo_spawn = 25
+            else:
+                tempo_spawn = 18
 
-        if pontos < 150:
-            tempo_spawn = 40
-        elif pontos < 200:
-            tempo_spawn = 25
-        else:
-            tempo_spawn = 18
+            spawn_timer += 1
+            if spawn_timer > tempo_spawn:
+                tipo = random.choice(["lento", "zigue", "cacador", "rapido", "ciclico", "saltador"])
 
-        spawn_timer += 1
-        # alterado aqui
-        if spawn_timer > tempo_spawn:
-            tipo = random.choice(["lento", "zigue", "cacador", "rapido", "ciclico", "saltador"])
+                if tipo == "lento":
+                    robo = RoboLento(random.randint(40, LARGURA - 40), -40)
+                elif tipo == "rapido":
+                    robo = RoboRapido(random.randint(40, LARGURA - 40), -40)
+                elif tipo == "zigue":
+                    robo = RoboZigueZague(random.randint(40, LARGURA - 40), -40)
+                elif tipo == "ciclico":
+                    robo = RoboCiclico(random.randint(40, LARGURA - 40), -40)
+                elif tipo == "cacador":
+                    robo = RoboCacador(random.randint(40, LARGURA - 40), -40, jogador)
+                elif tipo == "saltador":
+                    robo = RoboSaltador(random.randint(40, LARGURA - 40), -40)
 
-            if tipo == "lento":
-                robo = RoboLento(random.randint(40, LARGURA - 40), -40)
-            elif tipo == "rapido":
-                robo = RoboRapido(random.randint(40, LARGURA - 40), -40)
-            elif tipo == "zigue":
-                robo = RoboZigueZague(random.randint(40, LARGURA - 40), -40)
-            elif tipo == "ciclico":
-                robo = RoboCiclico(random.randint(40, LARGURA - 40), -40)
-            elif tipo == "cacador":
-                robo = RoboCacador(random.randint(40, LARGURA - 40), -40, jogador)
-            elif tipo == "saltador":
-                robo = RoboSaltador(random.randint(40, LARGURA - 40), -40)
+                inimigos.add(robo)
+                todos_sprites.add(robo)
+                spawn_timer = 0
 
-            inimigos.add(robo)
-            todos_sprites.add(robo)
-            spawn_timer = 0
+        # SPAWN DO BOSS
+        if pontos >= 200 and not boss_spawned and not boss_derrotado:
+            boss = Boss(LARGURA // 2, 80)
+            todos_sprites.add(boss)
+            inimigos.add(boss)
+            boss_ativo = True
+            boss_spawned = True
+            
+            # Parar música normal e tocar música de boss
+            pygame.mixer.music.load("assets/gameovereal.mp3")  # Usando música existente, você pode trocar depois
+            pygame.mixer.music.play(-1)
 
-        if pontos >= 200 and not transicao and not transicao_feita:
-            transicao = True
-            escurecendo = True
-            alpha = 0
+        # ATUALIZAR E ATIRAR DO BOSS
+        if boss_ativo and boss:
+            boss.atirar(tiros_boss, todos_sprites)
+            
+            # Checar colisão dos tiros do jogador com o boss
+            hits_boss = pygame.sprite.spritecollide(boss, tiros, True)
+            for hit in hits_boss:
+                boss.vida -= 1
+                som_boss_hit.play()
+                if boss.vida <= 0:
+                    boss_ativo = False
+                    boss_derrotado = True
+                    tempo_boss_morto = pygame.time.get_ticks()
+                    
+                    # Explosão grande para o boss
+                    for i in range(5):
+                        explosao = Explosao(boss.rect.centerx + random.randint(-50, 50), 
+                                           boss.rect.centery + random.randint(-50, 50))
+                        todos_sprites.add(explosao)
+                    
+                    # Pontos extras por derrotar o boss
+                    pontos += 100
+                    
+                    # Power-ups especiais ao derrotar o boss
+                    for i in range(3):
+                        tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
+                        powerup = tipo(boss.rect.centerx + random.randint(-100, 100), 
+                                      boss.rect.centery + random.randint(-50, 50))
+                        todos_sprites.add(powerup)
+                        powerups.add(powerup)
+                    
+                    som_boss_morto.play()
+                    boss.kill()
+                    
+                    # Voltar música normal
+                    pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
+                    pygame.mixer.music.play(-1)
 
+        # COLISÕES NORMAIS (tiros do jogador vs inimigos normais)
         colisoes = pygame.sprite.groupcollide(inimigos, tiros, True, True)
 
         for inimigo in colisoes:
@@ -159,7 +225,7 @@ while rodando:
             explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
             todos_sprites.add(explosao)
 
-            if random.random() < 0.035:
+            if random.random() < 0.035 and not boss_ativo:
                 p_tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
                 powerup = p_tipo(inimigo.rect.centerx, inimigo.rect.centery)
                 todos_sprites.add(powerup)
@@ -167,9 +233,10 @@ while rodando:
 
         pontos += len(colisoes)
 
+        # COLISÕES: Jogador vs Inimigos (incluindo boss)
         if pygame.sprite.spritecollide(jogador, inimigos, True):
             som_colisao_jogador.play()
-            jogador.vida -= 1
+            jogador.vida -= 2 if boss_ativo else 1  # Boss causa mais dano
             if jogador.vida <= 0:
 
                 if pontos > recorde:
@@ -180,8 +247,20 @@ while rodando:
                 pygame.mixer.music.load("assets/gameovereal.mp3")
                 pygame.mixer.music.play()
 
+        # COLISÕES: Jogador vs Tiros do Boss
+        if pygame.sprite.spritecollide(jogador, tiros_boss, True):
+            som_colisao_jogador.play()
+            jogador.vida -= 1
+            if jogador.vida <= 0:
+                if pontos > recorde:
+                    recorde = pontos
+                tela = "gameover"
+                pygame.mixer.music.load("assets/gameovereal.mp3")
+                pygame.mixer.music.play()
+
         todos_sprites.update()
 
+        # COLISÕES: Jogador vs Power-ups
         powerup_col = pygame.sprite.spritecollide(jogador, powerups, True)
         for p in powerup_col:
             current_time = pygame.time.get_ticks()
@@ -198,13 +277,39 @@ while rodando:
             elif isinstance(p, PowerUpVidaExtra):
                 jogador.vida += 1
                 
+        # Transição de fundo (apenas se não tiver boss ativo)
+        if pontos >= 200 and not transicao and not transicao_feita and not boss_ativo:
+            transicao = True
+            escurecendo = True
+            alpha = 0
+
+    # DESENHAR TELA
     TELA.blit(fundo_img, (0, 0))
 
     if tela == "jogo":
         todos_sprites.draw(TELA)
+        
+        # Mostrar barra de vida do boss na tela se estiver ativo
+        if boss_ativo and boss:
+            font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
+            texto_boss = font.render(f"BOSS: {boss.vida}/{boss.vida_max}", True, (255, 0, 0))
+            TELA.blit(texto_boss, (LARGURA // 2 - texto_boss.get_width() // 2, 10))
+            
+            # Aviso de boss ativo
+            aviso = font.render("BOSS ATIVO!", True, (255, 0, 0))
+            TELA.blit(aviso, (LARGURA // 2 - aviso.get_width() // 2, ALTURA - 30))
+        
         font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
         texto = font.render(f"Vida: {jogador.vida} | Pontos: {pontos}", True, (255, 255, 255))
         TELA.blit(texto, (10, 10))
+        
+        # Mostrar mensagem de boss derrotado
+        if boss_derrotado:
+            tempo_atual = pygame.time.get_ticks()
+            if tempo_atual - tempo_boss_morto < 3000:  # Mostrar por 3 segundos
+                font_grande = pygame.font.Font("assets/DepartureMono-Regular.otf", 36)
+                texto_vitoria = font_grande.render("BOSS DERROTADO! +100 PONTOS", True, (0, 255, 0))
+                TELA.blit(texto_vitoria, (LARGURA // 2 - texto_vitoria.get_width() // 2, ALTURA // 2))
 
     elif tela == "menu":
         tempo_logo += 0.05
