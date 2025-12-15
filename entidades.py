@@ -321,7 +321,6 @@ class RoboSaltador(Robo):
 
 
 # BOSS
-# BOSS
 class Boss(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=1.5)
@@ -329,7 +328,7 @@ class Boss(Robo):
         # Carregar a sprite alien1.png
         try:
             self.image_original = pygame.image.load("assets/alien1.png").convert_alpha()
-            # Ajustar o tamanho da sprite (você pode mudar os valores 120, 120)
+            # Ajustar o tamanho da sprite
             self.image_original = pygame.transform.scale(self.image_original, (120, 120))
             self.image = self.image_original.copy()
         except:
@@ -341,7 +340,7 @@ class Boss(Robo):
         self.rect = self.image.get_rect(center=(x, y))
         
         # Atributos do boss
-        self.vida = 30  # Vida ajustada para aparecer aos 40 pontos
+        self.vida = 30
         self.vida_max = 30
         self.vel_giro = 0.5
         self.angulo = 0
@@ -349,7 +348,24 @@ class Boss(Robo):
         self.centro_x = x
         self.centro_y = y
         self.tempo_tiro = 0
-        self.intervalo_tiro = 60  # Dispara a cada 60 frames (1 segundo a 60 FPS)
+        
+        # Sistema de ataques
+        self.ataque_atual = 1  # 1 = Círculo completo, 2 = Círculo rápido
+        self.contador_ataques = 0
+        self.max_ataque1 = 4   # Primeiro ataque repete 4 vezes
+        self.max_ataque2 = 3   # Segundo ataque repete 3 vezes
+        
+        # ATAQUE 1: Círculo completo
+        self.intervalo_ataque1 = 90  # Mais lento: 1.5 segundos (60 FPS)
+        
+        # ATAQUE 2: Círculo rápido
+        self.ataque_circulo_rapido = False
+        self.angulo_circulo = 0
+        self.velocidade_circulo = 20  # Graus por tiro (mais espaçado)
+        self.tempo_entre_tiros_circulo = 10  # Muito mais lento: 6 frames entre tiros
+        self.intervalo_ataque2 = 120  # 2 segundos entre cada sequência de círculo rápido
+        
+        # Padrão de movimento (mantém o mesmo)
         self.padrao_movimento = 0  # 0: círculo, 1: vai e vem horizontal, 2: vai e vem vertical
         self.tempo_padrao = 0
         
@@ -379,28 +395,58 @@ class Boss(Robo):
     def atirar(self, grupo_tiros, grupo_sprites):
         """O boss dispara tiros em padrões diferentes"""
         self.tempo_tiro += 1
-        if self.tempo_tiro >= self.intervalo_tiro:
-            self.tempo_tiro = 0
-            
-            # Padrão de tiro baseado no padrão de movimento
-            if self.padrao_movimento == 0:  # Tiro em círculo (8 direções)
+        
+        # ATAQUE 1: Círculo completo de uma vez (8 direções)
+        if self.ataque_atual == 1:
+            if self.tempo_tiro >= self.intervalo_ataque1:
+                self.tempo_tiro = 0
+                self.contador_ataques += 1
+                
+                # Dispara 8 tiros em todas as direções de uma vez
                 for i in range(8):
-                    angulo_tiro = i * 45
+                    angulo_tiro = i * 45  # 0, 45, 90, 135, 180, 225, 270, 315 graus
                     tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
                     grupo_tiros.add(tiro_boss)
                     grupo_sprites.add(tiro_boss)
-            elif self.padrao_movimento == 1:  # Tiro em leque (5 direções)
-                for i in range(5):
-                    angulo_tiro = -60 + i * 30
-                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
+                
+                # Verifica se já repetiu o ataque 1 vezes suficientes
+                if self.contador_ataques >= self.max_ataque1:
+                    self.ataque_atual = 2  # Muda para ataque 2
+                    self.contador_ataques = 0
+                    self.ataque_circulo_rapido = False
+                    self.angulo_circulo = 0
+        
+        # ATAQUE 2: Círculo rápido, um tiro de cada vez (mais lento)
+        elif self.ataque_atual == 2:
+            if not self.ataque_circulo_rapido:
+                # Inicia um novo ataque em círculo rápido
+                if self.tempo_tiro >= self.intervalo_ataque2:
+                    self.tempo_tiro = 0
+                    self.ataque_circulo_rapido = True
+                    self.angulo_circulo = 0
+            else:
+                # Continua o ataque em círculo rápido (MUITO mais lento)
+                if self.tempo_tiro >= self.tempo_entre_tiros_circulo:
+                    self.tempo_tiro = 0
+                    
+                    # Dispara um tiro na direção atual
+                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, self.angulo_circulo)
                     grupo_tiros.add(tiro_boss)
                     grupo_sprites.add(tiro_boss)
-            else:  # Tiro para baixo em 3 direções
-                for i in range(3):
-                    angulo_tiro = -15 + i * 15
-                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
-                    grupo_tiros.add(tiro_boss)
-                    grupo_sprites.add(tiro_boss)
+                    
+                    # Avança o ângulo para o próximo tiro
+                    self.angulo_circulo += self.velocidade_circulo
+                    
+                    # Quando completa 360 graus, termina o ataque
+                    if self.angulo_circulo >= 360:
+                        self.ataque_circulo_rapido = False
+                        self.angulo_circulo = 0
+                        self.contador_ataques += 1
+                        
+                        # Verifica se já repetiu o ataque 2 vezes suficientes
+                        if self.contador_ataques >= self.max_ataque2:
+                            self.ataque_atual = 1  # Muda para ataque 1
+                            self.contador_ataques = 0
 
     def update(self):
         self.atualizar_posicao()
@@ -421,14 +467,11 @@ class Boss(Robo):
         # Borda da barra
         pygame.draw.rect(barra_surface, (255, 255, 255, 200), (0, 0, 100, 15), 1)
         
-        # Texto "BOSS"
-        font = pygame.font.Font(None, 18)
-        texto = font.render("BOSS", True, (255, 255, 255))
-        texto_rect = texto.get_rect(center=(50, 7))
-        barra_surface.blit(texto, texto_rect)
+        # REMOVI O TEXTO "BOSS" E O INDICADOR DE ATAQUE
+        # Apenas a barra de vida permanece
         
         # Adicionar a barra de vida à imagem do boss
-        self.image.blit(barra_surface, (10, -20))
+        self.image.blit(barra_surface, (10, -25))
 
 
 class TiroBoss(Tiro):
