@@ -199,8 +199,6 @@ while rodando:
                                            boss.rect.centery + random.randint(-50, 50))
                         todos_sprites.add(explosao)
                     
-                    # Pontos extras por derrotar o boss
-                    pontos += 100
                     
                     # Power-ups especiais ao derrotar o boss
                     for i in range(3):
@@ -294,11 +292,7 @@ while rodando:
             font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
             texto_boss = font.render(f"BOSS: {boss.vida}/{boss.vida_max}", True, (255, 0, 0))
             TELA.blit(texto_boss, (LARGURA // 2 - texto_boss.get_width() // 2, 10))
-            
-            # Aviso de boss ativo
-            aviso = font.render("BOSS ATIVO!", True, (255, 0, 0))
-            TELA.blit(aviso, (LARGURA // 2 - aviso.get_width() // 2, ALTURA - 30))
-        
+                   
         font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
         texto = font.render(f"Vida: {jogador.vida} | Pontos: {pontos}", True, (255, 255, 255))
         TELA.blit(texto, (10, 10))
