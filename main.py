@@ -34,8 +34,14 @@ pygame.display.set_caption("Astro Combat")
 FPS = 60
 clock = pygame.time.Clock()
 
-fundo_img = pygame.image.load("assets/space.png").convert()
-fundo_img = pygame.transform.scale(fundo_img, (900, 500))
+fundo_normal = pygame.image.load("assets/space.png").convert()
+fundo_normal = pygame.transform.scale(fundo_normal, (LARGURA, ALTURA))
+
+fundo_boss = pygame.image.load("assets/Fundo-boss.jpg").convert()
+fundo_boss = pygame.transform.scale(fundo_boss, (LARGURA, ALTURA))
+
+fundo_img = fundo_normal
+
 logo_img = pygame.image.load("assets/logo.png").convert_alpha()
 logo_img = pygame.transform.scale(logo_img, (800, 350))
 
@@ -163,9 +169,9 @@ while rodando:
     if tela == "jogo":
         # SPAWN DE INIMIGOS NORMAIS (apenas se não houver boss ativo)
         if not boss_ativo and not boss_derrotado:
-            if pontos < 150:
+            if pontos < 50:
                 tempo_spawn = 40
-            elif pontos < 200:
+            elif pontos < 100:
                 tempo_spawn = 25
             else:
                 tempo_spawn = 18
@@ -192,13 +198,15 @@ while rodando:
                 spawn_timer = 0
 
         # SPAWN DO BOSS
-        if pontos >= 10 and not boss_spawned and not boss_derrotado:
-            boss = Boss(LARGURA // 2, 80)
-            todos_sprites.add(boss)
-            inimigos.add(boss)
-            boss_ativo = True
-            boss_spawned = True
-            
+            if pontos >= 100 and not boss_spawned and not boss_derrotado:
+                boss = Boss(LARGURA // 2, 80)
+                todos_sprites.add(boss)
+                inimigos.add(boss)
+                boss_ativo = True
+                boss_spawned = True
+
+                fundo_img = fundo_boss
+
             # Tocar música de boss
             try:
                 pygame.mixer.music.load(boss_music)
@@ -314,8 +322,8 @@ while rodando:
             elif isinstance(p, PowerUpVidaExtra):
                 jogador.vida += 1
                 
-        # Transição de fundo (apenas se não tiver boss ativo)
-        if pontos >= 200 and not transicao and not transicao_feita and not boss_ativo:
+        # TRANSIÇÃO 
+        if pontos >= 100 and not transicao and not transicao_feita and not boss_ativo:
             transicao = True
             escurecendo = True
             alpha = 0

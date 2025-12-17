@@ -327,9 +327,9 @@ class Boss(Robo):
         
         # Carregar a sprite alien1.png
         try:
-            self.image_original = pygame.image.load("assets/alien1.png").convert_alpha()
+            self.image_original = pygame.image.load("assets/boss-Photoroom.png").convert_alpha()
             # Ajustar o tamanho da sprite
-            self.image_original = pygame.transform.scale(self.image_original, (120, 120))
+            self.image_original = pygame.transform.scale(self.image_original, (120, 160))
             self.image = self.image_original.copy()
         except:
             # Fallback: se a imagem não existir, usa o quadrado vermelho
@@ -340,8 +340,8 @@ class Boss(Robo):
         self.rect = self.image.get_rect(center=(x, y))
         
         # Atributos do boss
-        self.vida = 30
-        self.vida_max = 30
+        self.vida = 100
+        self.vida_max = 100
         self.vel_giro = 0.5
         self.angulo = 0
         self.raio = 150
@@ -467,7 +467,6 @@ class Boss(Robo):
         # Borda da barra
         pygame.draw.rect(barra_surface, (255, 255, 255, 200), (0, 0, 100, 15), 1)
         
-        # REMOVI O TEXTO "BOSS" E O INDICADOR DE ATAQUE
         # Apenas a barra de vida permanece
         
         # Adicionar a barra de vida à imagem do boss
@@ -476,7 +475,6 @@ class Boss(Robo):
 
 class TiroBoss(Tiro):
     def __init__(self, x, y, angulo):
-        # Não chama super().__init__ porque queremos comportamento diferente
         pygame.sprite.Sprite.__init__(self)
         self.velocidade = 4
         self.angulo = math.radians(angulo)
@@ -484,11 +482,10 @@ class TiroBoss(Tiro):
         # Usar EXATAMENTE a mesma sprite do tiro do jogador
         try:
             # Mesma transformação do tiro do jogador
-            tiro_img = pygame.image.load("assets/ataque.png").convert_alpha()
-            tiro_img = pygame.transform.rotate(tiro_img, -135)
+            tiro_img = pygame.image.load("assets/Tiro-Boss.png").convert_alpha()
             
             # Tamanho um pouco menor que o do jogador (ajuste conforme necessário)
-            tiro_img = pygame.transform.scale(tiro_img, (70, 70))
+            tiro_img = pygame.transform.scale(tiro_img, (50, 90))
             self.image = tiro_img
         except:
             # Fallback: se a imagem não existir
@@ -497,11 +494,14 @@ class TiroBoss(Tiro):
             pygame.draw.circle(self.image, (255, 255, 0), (12, 12), 10)  # Com círculo amarelo
             
         self.rect = self.image.get_rect(center=(x, y))
+        self.hitbox = self.rect.inflate(-30, -50)
         
     def update(self):
         # Movimento baseado no ângulo (direções variadas)
         self.rect.x += math.cos(self.angulo) * self.velocidade
         self.rect.y += math.sin(self.angulo) * self.velocidade
+
+        self.hitbox.center = self.rect.center
         
         # Remove se sair da tela (com margem maior)
         if (self.rect.y < -100 or self.rect.y > ALTURA + 100 or 
