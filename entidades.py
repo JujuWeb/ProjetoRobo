@@ -105,7 +105,7 @@ class Jogador(Entidade):
 
 # TIRO
 class Tiro(Entidade):
-    def __init__(self, x, y):
+    def __init__(self, x, y, vel_x=0, vel_y=-1):
         super().__init__(x, y, 10)
         tiro1 = pygame.image.load("assets/ataque.png").convert_alpha()
         tiro1 = pygame.transform.rotate(tiro1, -135)
@@ -113,9 +113,14 @@ class Tiro(Entidade):
         self.image = tiro1
         self.rect = self.image.get_rect(center=(x, y))
 
+        self.vel_x = vel_x * self.velocidade
+        self.vel_y = vel_y * self.velocidade
+
     def update(self):
-        self.rect.y -= self.velocidade
-        if self.rect.y < 0:
+        self.rect.x += self.vel_x
+        self.rect.y += self.vel_y
+
+        if self.rect.bottom < 0 or self.rect.right < 0 or self.rect.left > LARGURA:
             self.kill()
 
 

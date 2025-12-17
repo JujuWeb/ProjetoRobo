@@ -138,8 +138,8 @@ while rodando:
 
                     # Tiro triplo
                     if pygame.time.get_ticks() < getattr(jogador, "tempo_tiro_triplo", 0):
-                        tiro_esq = Tiro(jogador.rect.centerx - 20, jogador.rect.top)
-                        tiro_dir = Tiro(jogador.rect.centerx + 20, jogador.rect.top)
+                        tiro_esq = Tiro(jogador.rect.centerx, jogador.rect.top, -0.5, -1)
+                        tiro_dir = Tiro(jogador.rect.centerx, jogador.rect.top, 0.5, -1)
                         todos_sprites.add(tiro_esq, tiro_dir)
                         tiros.add(tiro_esq, tiro_dir)
 
@@ -197,9 +197,14 @@ while rodando:
                 todos_sprites.add(robo)
                 spawn_timer = 0
 
+                fundo_img = fundo_boss if boss_ativo else fundo_normal
+
+
         # SPAWN DO BOSS
             if pontos >= 100 and not boss_spawned and not boss_derrotado:
                 boss = Boss(LARGURA // 2, 80)
+                for inimigo in inimigos:
+                    inimigo.kill()
                 todos_sprites.add(boss)
                 inimigos.add(boss)
                 boss_ativo = True
@@ -356,6 +361,7 @@ while rodando:
             TELA.blit(texto_vitoria, (LARGURA // 2 - texto_vitoria.get_width() // 2, ALTURA // 2))
 
     elif tela == "menu":
+        fundo_img = fundo_normal
         tempo_logo += 0.05
         logo_y = 40 + math.sin(tempo_logo) * 10
         logo_x = 25 + math.cos(tempo_logo * 0.8) * 10
