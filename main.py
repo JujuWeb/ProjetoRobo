@@ -245,11 +245,19 @@ while rodando:
 
         pontos += len(colisoes)
 
-        # COLISÕES: Jogador vs Inimigos (incluindo boss)
-        if pygame.sprite.spritecollide(jogador, inimigos, True):
+        hits = pygame.sprite.spritecollide(jogador, inimigos, False)
+
+        if hits:
             som_colisao_jogador.play()
-            jogador.vida -= 2 if boss_ativo else 1  # Boss causa mais dano
-            if jogador.vida <= 0:
+            jogador.vida -= 1
+            
+            jogador.rect.y += 60
+            
+            for inimigo in hits:
+                if not isinstance(inimigo, Boss):
+                    inimigo.kill()
+        
+        if jogador.vida <= 0:
 
                 if pontos > recorde:
                     recorde = pontos
