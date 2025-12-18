@@ -534,13 +534,10 @@ class TiroBoss(Tiro):
             tiro_img = pygame.transform.scale(tiro_img, (50, 90))
             self.image = tiro_img
         except:
-            # Fallback: se a imagem não existir
-            self.image = pygame.Surface((25, 25))
-            self.image.fill((255, 165, 0))  # Laranja
-            pygame.draw.circle(self.image, (255, 255, 0), (12, 12), 10)  # Com círculo amarelo
+            pass
             
         self.rect = self.image.get_rect(center=(x, y))
-        self.hitbox = self.rect.inflate(-30, -50)
+        self.hitbox = self.rect.inflate(-40, -60)
         
     def update(self):
         # Movimento baseado no ângulo (direções variadas)
@@ -561,9 +558,9 @@ class PowerUp(pygame.sprite.Sprite):
         
         if image_path and os.path.exists(image_path):
             img = pygame.image.load(image_path).convert_alpha()
-            self.image = pygame.transform.scale(img, (30, 30))
+            self.image = pygame.transform.scale(img, (65, 50))
         else:
-            self.image = pygame.Surface((30, 30), pygame.SRCALPHA)
+            self.image = pygame.Surface((65, 50), pygame.SRCALPHA)
             self.image.fill(cor)
         self.rect = self.image.get_rect(center=(x, y))
         self.velocidade = 2

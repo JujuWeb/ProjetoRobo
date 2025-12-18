@@ -165,7 +165,7 @@ while rodando:
             elif pontos < 100:
                 tempo_spawn = 25
             else:
-                tempo_spawn = 18
+                tempo_spawn = 28
 
             spawn_timer += 1
             if spawn_timer > tempo_spawn:
@@ -237,7 +237,7 @@ while rodando:
             explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
             todos_sprites.add(explosao)
 
-            if random.random() < 0.35 and not boss_ativo:
+            if random.random() < 0.050 and not boss_ativo:
                 p_tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
                 powerup = p_tipo(inimigo.rect.centerx, inimigo.rect.centery)
                 todos_sprites.add(powerup)
@@ -250,8 +250,6 @@ while rodando:
         if hits:
             som_colisao_jogador.play()
             jogador.vida -= 1
-            
-            jogador.rect.y += 60
             
             for inimigo in hits:
                 if not isinstance(inimigo, Boss):
