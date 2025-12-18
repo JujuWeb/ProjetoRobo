@@ -327,7 +327,7 @@ class RoboSaltador(Robo):
 
 # BOSS
 class Boss(Robo):
-    def __init__(self, x, y):
+    def __init__(self, x, y, fase = 1):
         super().__init__(x, y, velocidade=1.5)
 
         try:
@@ -476,7 +476,47 @@ class Boss(Robo):
                         if self.contador_ataques >= self.max_ataque2:
                             self.ataque_atual = 1
                             self.contador_ataques = 0
+
+    def atualizar_fase(self):
+        vida_pct = self.vida / self.vida_max
+
+        if vida_pct <= 0.3:
+            self.fase = 3
+        elif vida_pct <= 0.7:
+            self.fase = 2
+        else:
+            self.fase = 1
+
+        # Ajustes por fase
+        if self.fase == 1:
+            self.vel_giro = 0.6
+            self.intervalo_ataque1 = 90
+            self.intervalo_ataque2 = 120
+            self.tempo_entre_tiros_circulo = 10
+            self.velocidade_circulo = 20
+            self.max_ataque1 = 4
+            self.max_ataque2 = 3
+
+        elif self.fase == 2:
+            self.vel_giro = 0.9
+            self.intervalo_ataque1 = 70
+            self.intervalo_ataque2 = 100
+            self.tempo_entre_tiros_circulo = 8
+            self.velocidade_circulo = 26
+            self.max_ataque1 = 5
+            self.max_ataque2 = 4
+
+        else:  # FASE 3
+            self.vel_giro = 1.2
+            self.intervalo_ataque1 = 55
+            self.intervalo_ataque2 = 80
+            self.tempo_entre_tiros_circulo = 6
+            self.velocidade_circulo = 32
+            self.max_ataque1 = 6
+            self.max_ataque2 = 5
+        
     def update(self):
+        self.atualizar_fase()
         self.atualizar_posicao()
 
 class TiroBoss(Tiro):
@@ -535,12 +575,12 @@ class PowerUp(pygame.sprite.Sprite):
 
 class PowerUpVelocidade(PowerUp):
     def __init__(self, x, y):
-        super().__init__(x, y, cor=(255, 255, 0), image_path="assets/PurplePlanet.png")
+        super().__init__(x, y, cor=(255, 255, 0), image_path="assets/robovelocidade.png")
 
 class PowerUpTiroTriplo(PowerUp):
     def __init__(self, x, y):
-        super().__init__(x, y, cor=(128, 0, 128), image_path="assets/BluePlanet.png")
+        super().__init__(x, y, cor=(128, 0, 128), image_path="assets/robotirotriplo.png")
 
 class PowerUpVidaExtra(PowerUp):
     def __init__(self, x, y):
-        super().__init__(x, y, cor=(0, 255, 0), image_path="assets/RedPlanet.png")
+        super().__init__(x, y, cor=(0, 255, 0), image_path="assets/robovida.png")

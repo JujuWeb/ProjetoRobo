@@ -188,7 +188,7 @@ while rodando:
                 todos_sprites.add(robo)
                 spawn_timer = 0
 
-                fundo_img = fundo_boss if boss_ativo else fundo_normal
+                fundo_img = fundo_boss if transicao else fundo_normal
 
 
         # SPAWN DO BOSS
@@ -237,7 +237,7 @@ while rodando:
             explosao = Explosao(inimigo.rect.centerx, inimigo.rect.centery)
             todos_sprites.add(explosao)
 
-            if random.random() < 0.035 and not boss_ativo:
+            if random.random() < 0.35 and not boss_ativo:
                 p_tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
                 powerup = p_tipo(inimigo.rect.centerx, inimigo.rect.centery)
                 todos_sprites.add(powerup)
@@ -304,7 +304,7 @@ while rodando:
                 jogador.vida += 1
                 
         # TRANSIÇÃO 
-        if pontos >= 95 and not transicao and not transicao_feita and not boss_ativo:
+        if pontos >= 98 and not transicao and not transicao_feita and not boss_ativo:
             transicao = True
             escurecendo = True
             alpha = 0
