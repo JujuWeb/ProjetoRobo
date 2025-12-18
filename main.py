@@ -19,15 +19,6 @@ som_colisao_jogador.set_volume(1.0)
 som_boss_hit.set_volume(0.7)
 som_boss_morto.set_volume(5.0)
 
-# Carregar música de boss (com fallback)
-try:
-    pygame.mixer.music.load("assets/boss_final.mp3")
-    boss_music_loaded = True
-except:
-    print("Música de boss não encontrada, usando fallback")
-    pygame.mixer.music.load("assets/SkyFire(fundo).mp3")
-    boss_music_loaded = False
-
 TELA = pygame.display.set_mode((LARGURA, ALTURA))
 pygame.display.set_caption("Astro Combat")
 
@@ -84,6 +75,7 @@ mostrar_vitoria = False
 # Flag para controle de música
 mundo_normal_music = "assets/SkyFire(fundo).mp3"
 boss_music = "assets/boss_final.mp3"
+musica_atual = None
 
 while rodando:
     clock.tick(FPS)
@@ -96,6 +88,10 @@ while rodando:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     tela = "jogo"
+                    pygame.mixer.music.stop()
+                    pygame.mixer.music.load(mundo_normal_music)
+                    pygame.mixer.music.play(-1)
+                    musica_atual = "normal"
                     # Resetar tudo quando começa novo jogo
                     jogador.vida = 5
                     pontos = 0
@@ -118,12 +114,6 @@ while rodando:
                     tempo_boss_morto = 0
                     transicao_feita = False
                     
-                    # Tocar música normal
-                    try:
-                        pygame.mixer.music.load(mundo_normal_music)
-                        pygame.mixer.music.play(-1)
-                    except:
-                        pass
 
         elif tela == "jogo":
             if event.type == pygame.KEYDOWN:
@@ -138,8 +128,9 @@ while rodando:
 
                     # Tiro triplo
                     if pygame.time.get_ticks() < getattr(jogador, "tempo_tiro_triplo", 0):
-                        tiro_esq = Tiro(jogador.rect.centerx, jogador.rect.top, -0.5, -1)
-                        tiro_dir = Tiro(jogador.rect.centerx, jogador.rect.top, 0.5, -1)
+                        spread = 0.20
+                        tiro_esq = Tiro(jogador.rect.centerx, jogador.rect.top, -spread, -1)
+                        tiro_dir = Tiro(jogador.rect.centerx, jogador.rect.top, spread, -1)
                         todos_sprites.add(tiro_esq, tiro_dir)
                         tiros.add(tiro_esq, tiro_dir)
 
@@ -212,17 +203,6 @@ while rodando:
 
                 fundo_img = fundo_boss
 
-            # Tocar música de boss
-            try:
-                pygame.mixer.music.load(boss_music)
-                pygame.mixer.music.play(-1)
-            except:
-                # Fallback se a música não existir
-                try:
-                    pygame.mixer.music.load("assets/gameovereal.mp3")
-                    pygame.mixer.music.play(-1)
-                except:
-                    pass
 
         # ATUALIZAR E ATIRAR DO BOSS
         if boss_ativo and boss:
@@ -243,25 +223,14 @@ while rodando:
                         explosao = Explosao(boss.rect.centerx + random.randint(-50, 50), 
                                            boss.rect.centery + random.randint(-50, 50))
                         todos_sprites.add(explosao)
-                    
-                    # Pontos extras por derrotar o boss
-                    pontos += 100
-                    
-                    # Power-ups especiais ao derrotar o boss
-                    for i in range(3):
-                        tipo = random.choice([PowerUpTiroTriplo, PowerUpVelocidade, PowerUpVidaExtra])
-                        powerup = tipo(boss.rect.centerx + random.randint(-100, 100), 
-                                      boss.rect.centery + random.randint(-50, 50))
-                        todos_sprites.add(powerup)
-                        powerups.add(powerup)
-                    
+                 
                     som_boss_morto.play()
                     boss.kill()
                     
                     # Ir para tela de vitória após 2 segundos
                     mostrar_vitoria = True
 
-        # COLISÕES NORMAIS (tiros do jogador vs inimigos normais)
+        # COLISÕES NORMAIS
         colisoes = pygame.sprite.groupcollide(inimigos, tiros, True, True)
 
         for inimigo in colisoes:
@@ -328,10 +297,15 @@ while rodando:
                 jogador.vida += 1
                 
         # TRANSIÇÃO 
-        if pontos >= 100 and not transicao and not transicao_feita and not boss_ativo:
+        if pontos >= 95 and not transicao and not transicao_feita and not boss_ativo:
             transicao = True
             escurecendo = True
             alpha = 0
+            if musica_atual != "boss":
+                pygame.mixer.music.stop()
+            pygame.mixer.music.load(boss_music)
+            pygame.mixer.music.play(-1)
+            musica_atual = "boss"
             
         # Ir para tela de vitória quando boss for derrotado
         if mostrar_vitoria and pygame.time.get_ticks() - tempo_boss_morto > 2000:
@@ -374,8 +348,8 @@ while rodando:
         texto2 = font2.render("(Use WASD/setas para mover e Espaço para atirar)", True, (255, 255, 255))
 
         if texto_visivel:
-            TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, 350))
-            TELA.blit(texto2, (LARGURA//1.9 - texto.get_width()//2, 395))
+                TELA.blit(texto, (LARGURA//2 - texto.get_width()//2, 350)) 
+        TELA.blit(texto2, (LARGURA//1.9 - texto.get_width()//2, 395))
 
     elif tela == "pause":
         font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 50)
