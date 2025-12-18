@@ -203,7 +203,6 @@ while rodando:
 
                 fundo_img = fundo_boss
 
-
         # ATUALIZAR E ATIRAR DO BOSS
         if boss_ativo and boss:
             boss.atirar(tiros_boss, todos_sprites)

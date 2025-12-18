@@ -329,154 +329,155 @@ class RoboSaltador(Robo):
 class Boss(Robo):
     def __init__(self, x, y):
         super().__init__(x, y, velocidade=1.5)
-        
-        # Carregar a sprite alien1.png
+
         try:
             self.image_original = pygame.image.load("assets/boss-Photoroom.png").convert_alpha()
-            # Ajustar o tamanho da sprite
             self.image_original = pygame.transform.scale(self.image_original, (120, 160))
             self.image = self.image_original.copy()
         except:
-            # Fallback: se a imagem não existir, usa o quadrado vermelho
-            self.image = pygame.Surface((120, 120))
-            self.image.fill((255, 0, 0))
-            pygame.draw.rect(self.image, (255, 255, 255), self.image.get_rect(), 4)
-            
+            pass
+
         self.rect = self.image.get_rect(center=(x, y))
-        
-        # Atributos do boss
+
+        # Vida
         self.vida = 100
         self.vida_max = 100
-        self.vel_giro = 0.5
+
+        # Movimento
         self.angulo = 0
-        self.raio = 150
+        self.vel_giro = 0.6
+
+        # Centro FIXO (isso evita travar nas bordas)
         self.centro_x = x
         self.centro_y = y
+
+        # Amplitudes
+        self.raio = 140
+        self.amp_x = 250
+        self.amp_y = 80
+
+        # Padrões
+        self.padrao_movimento = 0
+        self.proximo_padrao = 0
+        self.tempo_padrao = 0
+
+        # Transição
+        self.em_transicao = False
+        self.t = 0.0
+        self.vel_transicao = 0.03
+
+        # Ataques (inalterados)
         self.tempo_tiro = 0
-        
-        # Sistema de ataques
-        self.ataque_atual = 1  # 1 = Círculo completo, 2 = Círculo rápido
+        self.ataque_atual = 1
         self.contador_ataques = 0
-        self.max_ataque1 = 4   # Primeiro ataque repete 4 vezes
-        self.max_ataque2 = 3   # Segundo ataque repete 3 vezes
-        
-        # ATAQUE 1: Círculo completo
-        self.intervalo_ataque1 = 90  # Mais lento: 1.5 segundos (60 FPS)
-        
-        # ATAQUE 2: Círculo rápido
+
+        self.max_ataque1 = 4
+        self.max_ataque2 = 3
+
+        self.intervalo_ataque1 = 90
+
         self.ataque_circulo_rapido = False
         self.angulo_circulo = 0
-        self.velocidade_circulo = 20  # Graus por tiro (mais espaçado)
-        self.tempo_entre_tiros_circulo = 10  # Muito mais lento: 6 frames entre tiros
-        self.intervalo_ataque2 = 120  # 2 segundos entre cada sequência de círculo rápido
-        
-        # Padrão de movimento (mantém o mesmo)
-        self.padrao_movimento = 0  # 0: círculo, 1: vai e vem horizontal, 2: vai e vem vertical
-        self.tempo_padrao = 0
-        
+        self.velocidade_circulo = 20
+        self.tempo_entre_tiros_circulo = 10
+        self.intervalo_ataque2 = 120
+
+    def _pos_padrao(self, padrao):
+        ang = math.radians(self.angulo)
+
+        if padrao == 0:  # circular
+            return (
+                self.centro_x + math.cos(ang) * self.raio,
+                self.centro_y + math.sin(ang) * self.raio
+            )
+        elif padrao == 1:  # horizontal
+            return (
+                self.centro_x + math.cos(ang) * self.amp_x,
+                self.centro_y
+            )
+        else:  # vertical
+            return (
+                self.centro_x,
+                self.centro_y + math.sin(ang) * self.amp_y + 45
+            )
+
     def atualizar_posicao(self):
+        self.angulo += self.vel_giro
         self.tempo_padrao += 1
-        
-        # Alterna padrão de movimento a cada 5 segundos
-        if self.tempo_padrao > 300:  # 300 frames = 5 segundos a 60 FPS
+
+        # Inicia transição
+        if self.tempo_padrao > 300 and not self.em_transicao:
             self.tempo_padrao = 0
-            self.padrao_movimento = (self.padrao_movimento + 1) % 3
+            self.em_transicao = True
+            self.t = 0.0
+            self.proximo_padrao = (self.padrao_movimento + 1) % 3
+
+        if self.em_transicao:
+            self.t += self.vel_transicao
+            if self.t >= 1:
+                self.t = 1
+                self.em_transicao = False
+                self.padrao_movimento = self.proximo_padrao
+
+            x1, y1 = self._pos_padrao(self.padrao_movimento)
+            x2, y2 = self._pos_padrao(self.proximo_padrao)
+
+            x = x1 + (x2 - x1) * self.t
+            y = y1 + (y2 - y1) * self.t
+        else:
+            x, y = self._pos_padrao(self.padrao_movimento)
+
+        self.rect.center = (int(x), int(y))
+        
+        limite_topo = 40
+        if self.rect.top < limite_topo:
+            excesso = limite_topo - self.rect.top
+            self.centro_y += excesso * 0.15
             
-        if self.padrao_movimento == 0:  # Movimento circular
-            self.angulo += self.vel_giro
-            self.rect.centerx = self.centro_x + math.cos(math.radians(self.angulo)) * self.raio
-            self.rect.centery = self.centro_y + math.sin(math.radians(self.angulo)) * self.raio
-        elif self.padrao_movimento == 1:  # Vai e vem horizontal
-            self.angulo += self.vel_giro
-            self.rect.centerx = self.centro_x + math.cos(math.radians(self.angulo)) * 200
-        else:  # Vai e vem vertical
-            self.angulo += self.vel_giro
-            self.rect.centery = self.centro_y + math.sin(math.radians(self.angulo)) * 100
-            
-        # Não deixa o boss sair da tela
-        self.rect.x = max(60, min(self.rect.x, LARGURA - 60))
-        self.rect.y = max(60, min(self.rect.y, ALTURA - 200))
 
     def atirar(self, grupo_tiros, grupo_sprites):
-        """O boss dispara tiros em padrões diferentes"""
         self.tempo_tiro += 1
-        
-        # ATAQUE 1: Círculo completo de uma vez (8 direções)
+
         if self.ataque_atual == 1:
             if self.tempo_tiro >= self.intervalo_ataque1:
                 self.tempo_tiro = 0
                 self.contador_ataques += 1
-                
-                # Dispara 8 tiros em todas as direções de uma vez
+
                 for i in range(8):
-                    angulo_tiro = i * 45  # 0, 45, 90, 135, 180, 225, 270, 315 graus
-                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, angulo_tiro)
-                    grupo_tiros.add(tiro_boss)
-                    grupo_sprites.add(tiro_boss)
-                
-                # Verifica se já repetiu o ataque 1 vezes suficientes
+                    tiro = TiroBoss(self.rect.centerx, self.rect.centery, i * 45)
+                    grupo_tiros.add(tiro)
+                    grupo_sprites.add(tiro)
+
                 if self.contador_ataques >= self.max_ataque1:
-                    self.ataque_atual = 2  # Muda para ataque 2
+                    self.ataque_atual = 2
                     self.contador_ataques = 0
                     self.ataque_circulo_rapido = False
                     self.angulo_circulo = 0
-        
-        # ATAQUE 2: Círculo rápido, um tiro de cada vez (mais lento)
-        elif self.ataque_atual == 2:
+        else:
             if not self.ataque_circulo_rapido:
-                # Inicia um novo ataque em círculo rápido
                 if self.tempo_tiro >= self.intervalo_ataque2:
                     self.tempo_tiro = 0
                     self.ataque_circulo_rapido = True
                     self.angulo_circulo = 0
             else:
-                # Continua o ataque em círculo rápido (MUITO mais lento)
                 if self.tempo_tiro >= self.tempo_entre_tiros_circulo:
                     self.tempo_tiro = 0
-                    
-                    # Dispara um tiro na direção atual
-                    tiro_boss = TiroBoss(self.rect.centerx, self.rect.centery, self.angulo_circulo)
-                    grupo_tiros.add(tiro_boss)
-                    grupo_sprites.add(tiro_boss)
-                    
-                    # Avança o ângulo para o próximo tiro
+
+                    tiro = TiroBoss(self.rect.centerx, self.rect.centery, self.angulo_circulo)
+                    grupo_tiros.add(tiro)
+                    grupo_sprites.add(tiro)
+
                     self.angulo_circulo += self.velocidade_circulo
-                    
-                    # Quando completa 360 graus, termina o ataque
+
                     if self.angulo_circulo >= 360:
                         self.ataque_circulo_rapido = False
-                        self.angulo_circulo = 0
                         self.contador_ataques += 1
-                        
-                        # Verifica se já repetiu o ataque 2 vezes suficientes
-                        if self.contador_ataques >= self.max_ataque2:
-                            self.ataque_atual = 1  # Muda para ataque 1
-                            self.contador_ataques = 0
 
+                        if self.contador_ataques >= self.max_ataque2:
+                            self.ataque_atual = 1
+                            self.contador_ataques = 0
     def update(self):
         self.atualizar_posicao()
-        
-        # Criar uma cópia da imagem original para não distorcer
-        self.image = self.image_original.copy()
-        
-        # Desenhar barra de vida em uma superfície separada
-        barra_surface = pygame.Surface((120, 30), pygame.SRCALPHA)
-        
-        # Fundo da barra de vida (vermelho)
-        pygame.draw.rect(barra_surface, (255, 0, 0, 180), (0, 0, 100, 15))
-        
-        # Vida atual (verde)
-        vida_width = 100 * (self.vida / self.vida_max)
-        pygame.draw.rect(barra_surface, (0, 255, 0, 180), (0, 0, vida_width, 15))
-        
-        # Borda da barra
-        pygame.draw.rect(barra_surface, (255, 255, 255, 200), (0, 0, 100, 15), 1)
-        
-        # Apenas a barra de vida permanece
-        
-        # Adicionar a barra de vida à imagem do boss
-        self.image.blit(barra_surface, (10, -25))
-
 
 class TiroBoss(Tiro):
     def __init__(self, x, y, angulo):
