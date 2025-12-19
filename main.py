@@ -53,9 +53,25 @@ tempo_logo = 0
 tempo_texto = 0
 texto_visivel = True
 
+# ================= CUTSCENE =================
+cutscene_frames = []
+CUTSCENE_FPS = 12
+cutscene_index = 0
+cutscene_timer = 0
+
+CUTSCENE_DIR = "assets/cutscene"
+if os.path.exists(CUTSCENE_DIR):
+    for arquivo in sorted(os.listdir(CUTSCENE_DIR)):
+        if arquivo.endswith(".png"):
+            img = pygame.image.load(os.path.join(CUTSCENE_DIR, arquivo)).convert()
+            img = pygame.transform.scale(img, (LARGURA, ALTURA))
+            cutscene_frames.append(img)
+# ===========================================
+
+
 DURACAO_POWERUP_MS = 10000
 
-tela = "menu"
+tela = "cutscene"
 rodando = True
 
 fundo_atual = 1
@@ -71,6 +87,8 @@ boss_spawned = False
 boss_derrotado = False
 tempo_boss_morto = 0
 mostrar_vitoria = False
+musica_cutscene_tocando = False
+
 
 # Flag para controle de música
 mundo_normal_music = "assets/SkyFire(fundo).mp3"
@@ -80,6 +98,41 @@ musica_atual = None
 while rodando:
     clock.tick(FPS)
 
+# ================= CUTSCENE =================
+    if tela == "cutscene":
+
+        if not musica_cutscene_tocando:
+            pygame.mixer.music.stop()
+            pygame.mixer.music.load(mundo_normal_music)
+            pygame.mixer.music.play(-1)
+            musica_atual = "normal"
+            musica_cutscene_tocando = True
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                rodando = False
+            if event.type == pygame.KEYDOWN:
+                tela = "menu"
+                cutscene_index = 0
+
+        if cutscene_frames:
+            cutscene_timer += 1
+            TELA.blit(cutscene_frames[cutscene_index], (0, 0))
+
+            if cutscene_timer >= FPS // CUTSCENE_FPS:
+                cutscene_timer = 0
+                cutscene_index += 1
+
+                if cutscene_index >= len(cutscene_frames):
+                    tela = "menu"
+                    cutscene_index = 0
+        else:
+            tela = "menu"
+
+        pygame.display.flip()
+        continue
+    # ===========================================
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             rodando = False
@@ -88,9 +141,6 @@ while rodando:
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     tela = "jogo"
-                    pygame.mixer.music.stop()
-                    pygame.mixer.music.load(mundo_normal_music)
-                    pygame.mixer.music.play(-1)
                     musica_atual = "normal"
                     # Resetar tudo quando começa novo jogo
                     jogador.vida = 5
