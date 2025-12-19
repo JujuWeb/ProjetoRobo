@@ -342,8 +342,8 @@ class Boss(Robo):
         self.rect = self.image.get_rect(center=(x, y))
 
         # Vida
-        self.vida = 1
-        self.vida_max = 1
+        self.vida = 100
+        self.vida_max = 100
 
         # Movimento
         self.angulo = 0
