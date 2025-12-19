@@ -31,6 +31,9 @@ fundo_normal = pygame.transform.scale(fundo_normal, (LARGURA, ALTURA))
 fundo_boss = pygame.image.load("assets/Fundo-boss.jpg").convert()
 fundo_boss = pygame.transform.scale(fundo_boss, (LARGURA, ALTURA))
 
+fundo_egg = pygame.image.load("assets/egg.png").convert()
+fundo_egg = pygame.transform.scale(fundo_egg, (LARGURA, ALTURA))
+
 fundo_img = fundo_normal
 
 logo_img = pygame.image.load("assets/logo.png").convert_alpha()
@@ -43,6 +46,7 @@ tiros_boss = pygame.sprite.Group()
 powerups = pygame.sprite.Group()
 
 jogador = Jogador(LARGURA // 2, ALTURA - 60)
+jogador.sem_limite = False  # 🔒 garante limite no novo jogo
 todos_sprites.add(jogador)
 
 pontos = 0
@@ -164,9 +168,10 @@ while rodando:
                     tempo_boss_morto = 0
                     transicao_feita = False
                     
-
         elif tela == "jogo":
             if event.type == pygame.KEYDOWN:
+                if mostrar_vitoria and event.key == pygame.K_RETURN:
+                    tela = "menu"
 
                 if event.key == pygame.K_SPACE:
                     som_tiro.play()
@@ -183,9 +188,13 @@ while rodando:
                         tiro_dir = Tiro(jogador.rect.centerx, jogador.rect.top, spread, -1)
                         todos_sprites.add(tiro_esq, tiro_dir)
                         tiros.add(tiro_esq, tiro_dir)
-
+                
                 if event.key == pygame.K_p:
                     tela = "pause"
+        elif tela == "egg":
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_RETURN:
+                    tela = "menu"
 
         elif tela == "pause":
             if event.type == pygame.KEYDOWN:
@@ -193,11 +202,6 @@ while rodando:
                     tela = "jogo"
 
         elif tela == "gameover":
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_RETURN:
-                    tela = "menu"
-
-        elif tela == "vitoria":
             if event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_RETURN:
                     tela = "menu"
@@ -266,6 +270,7 @@ while rodando:
                     boss_ativo = False
                     boss_derrotado = True
                     tempo_boss_morto = pygame.time.get_ticks()
+                    jogador.sem_limite = True
                     
                     # Explosão grande para o boss
                     for i in range(5):
@@ -362,32 +367,56 @@ while rodando:
             pygame.mixer.music.play(-1)
             musica_atual = "boss"
             
-        # Ir para tela de vitória quando boss for derrotado
+        # Após a vitória, ENTER volta ao menu
         if mostrar_vitoria and pygame.time.get_ticks() - tempo_boss_morto > 2000:
-            tela = "vitoria"
+            pass
+
 
     # DESENHAR TELA
     TELA.blit(fundo_img, (0, 0))
 
     if tela == "jogo":
         todos_sprites.draw(TELA)
+
+        if boss_derrotado and mostrar_vitoria:
+            font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 60)
+            font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
+            font3 = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
+
+            texto1 = font1.render("VITÓRIA!", True, (255, 215, 0))
+            texto2 = font2.render("BOSS DERROTADO", True, (0, 255, 0))
+            texto3 = font3.render(f"Pontuação Final: {pontos}", True, (255, 255, 255))
+            texto4 = font3.render("Pressione ENTER para voltar ao menu", True, (255, 255, 255))
+
+            TELA.blit(texto1, (LARGURA//2 - texto1.get_width()//2, ALTURA//2 - 100))
+            TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 - 40))
+            TELA.blit(texto3, (LARGURA//2 - texto3.get_width()//2, ALTURA//2 + 10))
+            TELA.blit(texto4, (LARGURA//2 - texto4.get_width()//2, ALTURA//2 + 60))
+
         
         # Mostrar barra de vida do boss na tela se estiver ativo
         if boss_ativo and boss:
             font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
             texto_boss = font.render(f"BOSS: {boss.vida}/{boss.vida_max}", True, (255, 0, 0))
             TELA.blit(texto_boss, (LARGURA // 2 - texto_boss.get_width() // 2, 10))
-            
-            
+                    
         font = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
         texto = font.render(f"Vida: {jogador.vida} | Pontos: {pontos}", True, (255, 255, 255))
         TELA.blit(texto, (10, 10))
-        
-        # Mostrar mensagem de boss derrotado
-        if boss_derrotado and mostrar_vitoria:
-            font_grande = pygame.font.Font("assets/DepartureMono-Regular.otf", 36)
-            texto_vitoria = font_grande.render("BOSS DERROTADO!", True, (0, 255, 0))
-            TELA.blit(texto_vitoria, (LARGURA // 2 - texto_vitoria.get_width() // 2, ALTURA // 2))
+
+# ================= EASTER EGG =================
+        if boss_derrotado:
+            if (jogador.rect.right < 0 or
+                jogador.rect.left > LARGURA or
+                jogador.rect.bottom < 0 or
+                jogador.rect.top > ALTURA):
+
+                tela = "egg"
+# ==============================================
+
+    elif tela == "egg":
+        TELA.blit(fundo_egg, (0, 0))
+
 
     elif tela == "menu":
         fundo_img = fundo_normal
@@ -433,38 +462,6 @@ while rodando:
         TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 + 30))
         TELA.blit(texto3, (LARGURA//2 - texto3.get_width()//2, ALTURA//2 + 60))
         TELA.blit(texto4, (LARGURA//2 - texto4.get_width()//2, ALTURA//2 + 90))
-
-    elif tela == "vitoria":
-        # Fundo especial para vitória
-        TELA.fill((0, 20, 40))  # Azul escuro
-        
-        # Estrelas no fundo
-        for i in range(50):
-            x = random.randint(0, LARGURA)
-            y = random.randint(0, ALTURA)
-            pygame.draw.circle(TELA, (255, 255, 255), (x, y), 1)
-        
-        font1 = pygame.font.Font("assets/DepartureMono-Regular.otf", 60)
-        font2 = pygame.font.Font("assets/DepartureMono-Regular.otf", 30)
-        font3 = pygame.font.Font("assets/DepartureMono-Regular.otf", 20)
-
-        texto1 = font1.render("VITÓRIA!", True, (255, 215, 0))  # Dourado
-        texto2 = font2.render("BOSS DERROTADO", True, (0, 255, 0))
-        texto3 = font3.render(f"Pontuação Final: {pontos}", True, (255, 255, 255))
-        texto4 = font3.render(f"Recorde: {recorde}", True, (255, 255, 0))
-        texto5 = font3.render("Pressione ENTER para voltar ao menu", True, (255, 255, 255))
-        
-        if pontos > recorde:
-            texto6 = font2.render("NOVO RECORDE!", True, (255, 50, 50))
-            TELA.blit(texto6, (LARGURA//2 - texto6.get_width()//2, ALTURA//2 + 10))
-            recorde = pontos
-
-        if texto_visivel:
-            TELA.blit(texto1, (LARGURA//2 - texto1.get_width()//2, 100))
-        TELA.blit(texto2, (LARGURA//2 - texto2.get_width()//2, ALTURA//2 - 60))
-        TELA.blit(texto3, (LARGURA//2 - texto3.get_width()//2, ALTURA//2))
-        TELA.blit(texto4, (LARGURA//2 - texto4.get_width()//2, ALTURA//2 + 30))
-        TELA.blit(texto5, (LARGURA//2 - texto5.get_width()//2, ALTURA//2 + 80))
 
     if transicao:
         overlay = pygame.Surface((LARGURA, ALTURA))

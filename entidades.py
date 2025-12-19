@@ -51,14 +51,15 @@ class Explosao(pygame.sprite.Sprite):
         self.image = self.frames[int(self.frame)]
         self.rect = self.image.get_rect(center=self.center)
 
-
 # JOGADOR
 class Jogador(Entidade):
     def __init__(self, x, y):
         super().__init__(x, y, 5)
 
-        self.vel_base = 5          # velocidade normal
-        self.tempo_vel = 0         # tempo que o power-up dura
+        self.vel_base = 5
+        self.tempo_vel = 0
+
+        self.sem_limite = False  # 🔥 EASTER EGG FLAG
 
         self.sprites: List[pygame.Surface] = []
 
@@ -84,7 +85,7 @@ class Jogador(Entidade):
             self.frame = 0
         self.image = self.sprites[int(self.frame)]
 
-        #  VOLTAR À VELOCIDADE NORMAL QUANDO O TEMPO ACABAR
+        # voltar à velocidade normal
         if pygame.time.get_ticks() > self.tempo_vel:
             self.velocidade = self.vel_base
 
@@ -99,9 +100,10 @@ class Jogador(Entidade):
         if keys[pygame.K_d] or keys[pygame.K_RIGHT]:
             self.mover(self.velocidade, 0)
 
-        # limites
-        self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
-        self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
+        # 🔒 LIMITES DA TELA (DESATIVADOS APÓS O BOSS)
+        if not self.sem_limite:
+            self.rect.x = max(0, min(self.rect.x, LARGURA - self.image.get_width()))
+            self.rect.y = max(0, min(self.rect.y, ALTURA - self.image.get_height()))
 
 # TIRO
 class Tiro(Entidade):
@@ -340,8 +342,8 @@ class Boss(Robo):
         self.rect = self.image.get_rect(center=(x, y))
 
         # Vida
-        self.vida = 100
-        self.vida_max = 100
+        self.vida = 1
+        self.vida_max = 1
 
         # Movimento
         self.angulo = 0
