@@ -525,13 +525,10 @@ class TiroBoss(Tiro):
         self.velocidade = 4
         self.angulo = math.radians(angulo)
         
-        # Usar EXATAMENTE a mesma sprite do tiro do jogador
         try:
-            # Mesma transformação do tiro do jogador
             tiro_img = pygame.image.load("assets/Tiro-Boss.png").convert_alpha()
             
-            # Tamanho um pouco menor que o do jogador (ajuste conforme necessário)
-            tiro_img = pygame.transform.scale(tiro_img, (50, 90))
+            tiro_img = pygame.transform.scale(tiro_img, (45, 85))
             self.image = tiro_img
         except:
             pass
